@@ -4,7 +4,7 @@ from app.data_access import create_person
 db = SessionLocal()
 person = create_person(
     db,
-    pseudonym="P-TEST-01",
+    pseudonym="P-TEST-02",   # changed from P-TEST-01
     language="hi",
     case_phase="investigation",
     district="Jaipur",
