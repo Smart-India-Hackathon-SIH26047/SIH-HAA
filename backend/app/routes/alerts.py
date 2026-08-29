@@ -5,9 +5,9 @@ from typing import Literal
 from app.database import get_db
 from app.data_access import get_open_alerts_for_officer
 from app.business_logic import BusinessLogicEngine
-
+from app.engine import engine
 router = APIRouter()
-engine = BusinessLogicEngine()
+
 
 
 class AcknowledgeRequest(BaseModel):

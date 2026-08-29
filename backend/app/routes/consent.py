@@ -1,9 +1,9 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from app.business_logic import BusinessLogicEngine, ConsentType
-
+from app.engine import engine
 router = APIRouter()
-engine = BusinessLogicEngine()
+
 
 
 class ConsentRequest(BaseModel):
