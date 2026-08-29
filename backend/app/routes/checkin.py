@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.data_access import create_checkin
-from app.schemas import CheckinRequest, CheckinResponse, ScoreComponents
+from app.schemas import CheckinRequest, ScoreComponents
 from app.business_logic import (
     BusinessLogicEngine,
     CaseSupportInputs,
@@ -14,7 +14,7 @@ router = APIRouter()
 engine = BusinessLogicEngine()
 
 
-@router.post("/checkin", response_model=CheckinResponse)
+@router.post("/checkin")
 def submit_checkin(payload: CheckinRequest, db: Session = Depends(get_db)):
     checkin = create_checkin(
         db,
@@ -23,12 +23,10 @@ def submit_checkin(payload: CheckinRequest, db: Session = Depends(get_db)):
         raw_text=payload.text,
     )
 
-    # consent — simplified for now, real consent flow comes later
     engine.consent.set_consent(payload.person_id, ConsentType.ESSENTIAL_SERVICE, True)
     engine.consent.set_consent(payload.person_id, ConsentType.CASE_SUPPORT_MONITORING, True)
     engine.consent.set_consent(payload.person_id, ConsentType.SAFETY_ANALYSIS, True)
 
-    # still fake ML inputs — real values come from your ML teammate later
     inputs = CaseSupportInputs(
         expressed_distress=60,
         voice_stress=40,
@@ -47,31 +45,29 @@ def submit_checkin(payload: CheckinRequest, db: Session = Depends(get_db)):
         inputs=inputs,
     )
 
-    # his engine can return TWO different types — handle both
     if isinstance(result, CaseSupportScore):
         components = {c.component: c.raw_score for c in result.contributions}
-        return CheckinResponse(
-            person_id=payload.person_id,
-            score=result.score,
-            band=result.band.value,
-            components=ScoreComponents(
-                emotion=components.get("Expressed distress", 0),
-                voice_stress=components.get("Voice stress", 0),
-                engagement=components.get("Engagement change", 0),
-                case_events=components.get("Case-event pressure", 0),
-                reported_stressors=components.get("Reported external stressors", 0),
-                trajectory=components.get("Trajectory", 0),
-            ),
-        )
+        return {
+            "type": "score",
+            "person_id": payload.person_id,
+            "score": result.score,
+            "band": result.band.value,
+            "components": {
+                "emotion": components.get("Expressed distress", 0),
+                "voice_stress": components.get("Voice stress", 0),
+                "engagement": components.get("Engagement change", 0),
+                "case_events": components.get("Case-event pressure", 0),
+                "reported_stressors": components.get("Reported external stressors", 0),
+                "trajectory": components.get("Trajectory", 0),
+            },
+        }
     else:
-        # SafetyAssessment — critical safety content was detected
-        # this needs its own response shape eventually; for now return something safe
-        return CheckinResponse(
-            person_id=payload.person_id,
-            score=100,
-            band="priority",
-            components=ScoreComponents(
-                emotion=0, voice_stress=0, engagement=0,
-                case_events=0, reported_stressors=0, trajectory=0,
-            ),
-        )
+        # genuinely a SafetyAssessment — surface it honestly, no faked score
+        return {
+            "type": "safety_flag",
+            "person_id": payload.person_id,
+            "level": result.level.value,
+            "reason": result.reason,
+            "recommended_response": result.recommended_response,
+            "helpline_info": result.helpline_info,
+        }
