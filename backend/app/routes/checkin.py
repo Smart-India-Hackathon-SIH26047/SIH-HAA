@@ -9,9 +9,9 @@ from app.business_logic import (
     ConsentType,
     CaseSupportScore,
 )
-
+from app.engine import engine
 router = APIRouter()
-engine = BusinessLogicEngine()
+
 
 
 @router.post("/checkin")
