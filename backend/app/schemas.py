@@ -19,3 +19,4 @@ class CheckinResponse(BaseModel):
     score: float
     band: Literal["stable", "watch", "elevated", "priority"]
     components: ScoreComponents
+
