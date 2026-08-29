@@ -433,7 +433,7 @@ def calculate_case_support_score(
             recommended_response="Continue the normal companion experience.",
         )
 
-    if safety.level == SafetyLevel.CRITICAL:
+    if safety.scoring_skipped:
         return safety
 
     if not inputs.text_emotion_layer_enabled:
