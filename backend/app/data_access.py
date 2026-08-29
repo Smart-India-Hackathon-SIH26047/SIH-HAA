@@ -17,12 +17,13 @@ def _log_access(db: Session, person_id: uuid.UUID, accessed_by: str, action: str
     db.commit()
 
 
-def create_person(db: Session, pseudonym: str, language: str, case_phase: str, district: str) -> Person:
+def create_person(db: Session, pseudonym: str, language: str, case_phase: str, district: str, state: str) -> Person:
     person = Person(
         pseudonym=pseudonym,
         language=language,
         case_phase=case_phase,
         district=district,
+        state=state,
     )
     db.add(person)
     db.commit()
@@ -77,8 +78,10 @@ def create_score(
     band: str,
     checkin_id: uuid.UUID | None = None,
     component_emotion: float | None = None,
+    component_voice_stress: float | None = None,
     component_engagement: float | None = None,
     component_case_events: float | None = None,
+    component_reported_stressors: float | None = None,
     component_trajectory: float | None = None,
 ) -> Score:
     score = Score(
@@ -87,8 +90,10 @@ def create_score(
         value=value,
         band=band,
         component_emotion=component_emotion,
+        component_voice_stress=component_voice_stress,
         component_engagement=component_engagement,
         component_case_events=component_case_events,
+        component_reported_stressors=component_reported_stressors,
         component_trajectory=component_trajectory,
     )
     db.add(score)
