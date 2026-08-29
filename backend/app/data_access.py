@@ -17,7 +17,14 @@ def _log_access(db: Session, person_id: uuid.UUID, accessed_by: str, action: str
     db.commit()
 
 
-def create_person(db: Session, pseudonym: str, language: str, case_phase: str, district: str) -> Person:
+def create_person(
+    db: Session,
+    pseudonym: str,
+    language: str,
+    case_phase: str,
+    district: str,
+    state: str = "",
+) -> Person:
     person = Person(
         pseudonym=pseudonym,
         language=language,
@@ -29,6 +36,11 @@ def create_person(db: Session, pseudonym: str, language: str, case_phase: str, d
     db.commit()
     db.refresh(person)
     return person
+
+
+def log_access(db: Session, person_id: uuid.UUID, accessed_by: str, action: str = "edited") -> None:
+    """Persist an access/audit record through the data-access boundary."""
+    _log_access(db, person_id=person_id, accessed_by=accessed_by, action=action)
 
 
 def get_person_history(db: Session, person_id: uuid.UUID, accessed_by: str) -> dict:
