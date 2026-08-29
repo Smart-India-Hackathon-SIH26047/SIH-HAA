@@ -17,6 +17,7 @@ class Person(Base):
     registered_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     case_phase = Column(String, nullable=False)
     district = Column(String, nullable=False)
+    state = Column(String, nullable=False)
     consent_given = Column(Boolean, default=False, nullable=False)
     consent_at = Column(DateTime, nullable=True)
 
@@ -71,8 +72,10 @@ class Score(Base):
     value = Column(Float, nullable=False)
     band = Column(String, nullable=False)
     component_emotion = Column(Float, nullable=True)
+    component_voice_stress = Column(Float, nullable=True)
     component_engagement = Column(Float, nullable=True)
     component_case_events = Column(Float, nullable=True)
+    component_reported_stressors = Column(Float, nullable=True)
     component_trajectory = Column(Float, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
