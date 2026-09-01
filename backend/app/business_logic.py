@@ -587,10 +587,9 @@ def build_band_context(
     if history is None:
         raise ValueError(f"Person not found: {person_id}")
 
-    scores = sorted(
-        history.get("scores", []),
-        key=lambda item: item.created_at or datetime.min,
-    )
+    # data_access returns scores ordered by created_at, so this pass is O(n)
+    # and does not repeat an O(n log n) sort in the business layer.
+    scores = history.get("scores", [])
     events = history.get("case_events", [])
 
     previous_score = float(scores[-1].value) if scores else None
