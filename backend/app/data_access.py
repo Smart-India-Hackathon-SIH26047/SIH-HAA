@@ -53,7 +53,12 @@ def get_person_history(db: Session, person_id: uuid.UUID, accessed_by: str) -> d
     return {
         "person": person,
         "checkins": db.query(CheckIn).filter(CheckIn.person_id == person_id).all(),
-        "scores": db.query(Score).filter(Score.person_id == person_id).all(),
+        "scores": (
+            db.query(Score)
+            .filter(Score.person_id == person_id)
+            .order_by(Score.created_at.asc())
+            .all()
+        ),
         "case_events": db.query(CaseEvent).filter(CaseEvent.person_id == person_id).all(),
         "alerts": (
             db.query(Alert)
