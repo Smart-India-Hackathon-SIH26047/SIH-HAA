@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 import re
 import uuid
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 from sqlalchemy.orm import Session
 
@@ -587,10 +587,9 @@ def build_band_context(
     if history is None:
         raise ValueError(f"Person not found: {person_id}")
 
-    scores = sorted(
-        history.get("scores", []),
-        key=lambda item: item.created_at or datetime.min,
-    )
+    # data_access returns scores ordered by created_at, so this pass is O(n)
+    # and does not repeat an O(n log n) sort in the business layer.
+    scores = history.get("scores", [])
     events = history.get("case_events", [])
 
     previous_score = float(scores[-1].value) if scores else None
@@ -910,6 +909,228 @@ def _assigned_role(recipients: list[str]) -> Optional[str]:
     if "counsellor" in recipients:
         return "counsellor"
     return None
+
+
+# ---------------------------------------------------------------------------
+# Additional prototype rules for the complete PNG requirements
+# ---------------------------------------------------------------------------
+
+
+SUPPORTED_INTERACTION_CHANNELS = {
+    "chat", "voice", "sms", "ivrs", "mobile_app", "web_portal", "helpline"
+}
+
+
+@dataclass
+class InteractionPlan:
+    """A safe plan; it describes an interaction but never sends it."""
+
+    channel: str
+    due: bool
+    reason: str
+    human_review_required: bool = True
+
+
+@dataclass
+class EarlyWarning:
+    """A deterministic early-warning signal, not a clinical prediction."""
+
+    triggered: bool
+    reasons: list[str]
+    score_delta: float
+    action: str = "flag_for_human_review"
+
+
+@dataclass
+class RoutingPlan:
+    """Configured recipients for a human-led alert workflow."""
+
+    roles: list[str]
+    notification_allowed: bool
+    reason: str
+    human_review_required: bool = True
+
+
+# These tracks are intentionally not legal advice. A reviewed provision
+# catalogue must be supplied before a real recommendation is displayed.
+DRIVER_INTERVENTION_TRACKS = {
+    "Expressed distress": "counselling_support",
+    "Voice stress": "counselling_support",
+    "Engagement change": "outreach_and_checkin_support",
+    "Case-event pressure": "case_status_and_compensation_support",
+    "Reported external stressors": "protection_and_financial_support",
+    "Trajectory": "closer_follow_up_support",
+}
+
+
+# Default intervals are product-policy placeholders, not clinical requirements.
+INTERACTION_INTERVAL_DAYS = {
+    "chat": 7,
+    "voice": 7,
+    "sms": 7,
+    "ivrs": 7,
+    "mobile_app": 7,
+    "web_portal": 7,
+    "helpline": 3,
+}
+
+
+def validate_interaction_channel(channel: str) -> str:
+    """Accept only channels supported by the product contract."""
+    normalized = channel.strip().lower()
+    if normalized not in SUPPORTED_INTERACTION_CHANNELS:
+        raise ValueError(f"Unsupported interaction channel: {channel}")
+    return normalized
+
+
+def plan_periodic_interaction(
+    channel: str,
+    days_since_last_interaction: int,
+    *,
+    requested_by_human: bool = False,
+) -> InteractionPlan:
+    """Decide whether a periodic interaction is due in O(1) time."""
+    channel = validate_interaction_channel(channel)
+    if days_since_last_interaction < 0:
+        raise ValueError("days_since_last_interaction cannot be negative")
+
+    due = requested_by_human or days_since_last_interaction >= INTERACTION_INTERVAL_DAYS[channel]
+    reason = "Human requested follow-up." if requested_by_human else (
+        f"The {channel} interval has elapsed."
+        if due else "The scheduled interval has not elapsed."
+    )
+    return InteractionPlan(channel=channel, due=due, reason=reason)
+
+
+def calculate_case_event_pressure(
+    event_types: Iterable[str],
+    pending_compensation: bool = False,
+) -> float:
+    """Convert verified case facts into a bounded 0–100 pressure score.
+
+    Events are counted once by category. A set makes duplicate events cheap to
+    ignore and keeps the work O(n) for n supplied events.
+    """
+    valid_events = {
+        "hearing_scheduled": 10,
+        "hearing_delayed": 35,
+        "threat_reported": 60,
+        "compensation_released": -20,
+    }
+    seen = set()
+    pressure = 0.0
+    for event_type in event_types:
+        if event_type in valid_events and event_type not in seen:
+            pressure += valid_events[event_type]
+            seen.add(event_type)
+    if pending_compensation:
+        pressure += 25
+    return clamp(pressure)
+
+
+def evaluate_early_warning(
+    current_score: float,
+    previous_score: Optional[float],
+    sustained_decline_cycles: int = 0,
+    disengagement_cycles: int = 0,
+    reported_threat: bool = False,
+) -> EarlyWarning:
+    """Flag deterioration before relying only on an absolute band."""
+    validate_score("current_score", current_score)
+    if previous_score is not None:
+        validate_score("previous_score", previous_score)
+    if sustained_decline_cycles < 0 or disengagement_cycles < 0:
+        raise ValueError("cycle counts cannot be negative")
+
+    delta = 0.0 if previous_score is None else round(current_score - previous_score, 2)
+    reasons = []
+    if delta >= ALERT_THRESHOLDS["sharp_delta"]:
+        reasons.append("sharp_score_increase")
+    if sustained_decline_cycles >= ALERT_THRESHOLDS["sustained_decline_cycles"]:
+        reasons.append("sustained_multi_cycle_decline")
+    if disengagement_cycles >= ALERT_THRESHOLDS["disengagement_cycles"]:
+        reasons.append("repeated_disengagement")
+    if reported_threat:
+        reasons.append("reported_threat")
+
+    return EarlyWarning(triggered=bool(reasons), reasons=reasons, score_delta=delta)
+
+
+def build_routing_plan(
+    band: Band,
+    *,
+    reported_threat: bool = False,
+    designated_roles: Optional[Iterable[str]] = None,
+) -> RoutingPlan:
+    """Build recipients without contacting anyone automatically."""
+    roles = ["counsellor"]
+    if band == Band.PRIORITY or reported_threat:
+        roles.append("district_officer")
+    for role in designated_roles or []:
+        if role not in roles and role in {"counsellor", "district_officer", "admin"}:
+            roles.append(role)
+    return RoutingPlan(
+        roles=roles,
+        notification_allowed=False,
+        reason="Recipients are prepared for an authorized human-led workflow; no automatic notification is sent.",
+    )
+
+
+def build_traceable_interventions(
+    drivers: Iterable[str],
+    provision_catalog: dict[str, list[Provision]],
+) -> list[dict[str, Any]]:
+    """Attach an intervention track and legal catalogue evidence to each driver."""
+    suggestions = intervention_suggestions(list(dict.fromkeys(drivers)), provision_catalog)
+    for suggestion in suggestions:
+        suggestion["intervention_track"] = DRIVER_INTERVENTION_TRACKS.get(
+            suggestion["driver"], "human_review_required"
+        )
+    return suggestions
+
+
+def summarize_dashboard(cases: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    """Create privacy-minimized district/state summaries in O(n).
+
+    The output contains counts and score totals only; it does not return raw
+    text, pseudonyms, or identity attributes.
+    """
+    summary: dict[str, Any] = {
+        "total_cases": 0,
+        "bands": {band.value: 0 for band in Band},
+        "districts": {},
+        "states": {},
+    }
+    for case in cases:
+        band = case.get("band")
+        if isinstance(band, Band):
+            band = band.value
+        if band not in summary["bands"]:
+            continue
+        summary["total_cases"] += 1
+        summary["bands"][band] += 1
+        for group in ("districts", "states"):
+            name = case.get(group[:-1])
+            if name:
+                summary[group][name] = summary[group].get(name, 0) + 1
+    return summary
+
+
+def retention_due(
+    created_at: datetime,
+    *,
+    retention_days: int,
+    now: Optional[datetime] = None,
+) -> bool:
+    """Return whether a record is eligible for policy-controlled deletion."""
+    if retention_days < 0:
+        raise ValueError("retention_days cannot be negative")
+    reference = now or utc_now()
+    if created_at.tzinfo is None:
+        created_at = created_at.replace(tzinfo=timezone.utc)
+    if reference.tzinfo is None:
+        reference = reference.replace(tzinfo=timezone.utc)
+    return reference - created_at >= timedelta(days=retention_days)
 
 
 # ---------------------------------------------------------------------------
