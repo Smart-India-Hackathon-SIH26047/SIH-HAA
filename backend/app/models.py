@@ -86,6 +86,7 @@ class Score(Base):
         ),
         Index("ix_scores_band", "band"),
         Index("ix_scores_person_id", "person_id"),
+        Index("ix_scores_person_created_at", "person_id", "created_at"),
     )
 
 
@@ -104,6 +105,7 @@ class CaseEvent(Base):
             "'threat_reported', 'compensation_released')",
             name="check_event_type_valid"
         ),
+        Index("ix_case_events_person_id", "person_id"),
     )
 
 
