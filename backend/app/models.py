@@ -52,9 +52,6 @@ class CheckIn(Base):
     person_id = Column(UUID(as_uuid=True), ForeignKey("people.id"), nullable=False)
     channel = Column(String, nullable=False)
     raw_text = Column(String, nullable=False)
-    ai_response = Column(String, nullable=True)
-    is_crisis = Column(Boolean, default=False, nullable=False)
-    language = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     response_time_sec = Column(Integer, nullable=True)
 
