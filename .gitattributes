@@ -3,3 +3,4 @@
 =======
 *.safetensors filter=lfs diff=lfs merge=lfs -text
 >>>>>>> 541b53d (Add IndicBERT sentiment model)
+models/whisper/base.pt filter=lfs diff=lfs merge=lfs -text
