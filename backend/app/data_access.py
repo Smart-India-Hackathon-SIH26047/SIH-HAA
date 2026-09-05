@@ -69,18 +69,46 @@ def create_checkin(
     person_id: uuid.UUID,
     channel: str,
     raw_text: str,
+    ai_response: str | None = None,
+    is_crisis: bool = False,
+    language: str | None = None,
     response_time_sec: int | None = None,
 ) -> CheckIn:
     checkin = CheckIn(
         person_id=person_id,
         channel=channel,
         raw_text=raw_text,
+        ai_response=ai_response,
+        is_crisis=is_crisis,
+        language=language,
         response_time_sec=response_time_sec,
     )
     db.add(checkin)
     db.commit()
     db.refresh(checkin)
     return checkin
+
+def get_recent_checkins_for_person(db: Session, person_id: uuid.UUID, limit: int = 10) -> list[dict]:
+    """
+    Returns the last `limit` check-ins for a person, formatted as
+    conversation history for the chatbot (Gemini's expected shape).
+    """
+    checkins = (
+        db.query(CheckIn)
+        .filter(CheckIn.person_id == person_id)
+        .order_by(CheckIn.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+    checkins.reverse()  # oldest first
+
+    history = []
+    for checkin in checkins:
+        history.append({"role": "user", "parts": [checkin.raw_text]})
+        if checkin.ai_response:
+            history.append({"role": "model", "parts": [checkin.ai_response]})
+
+    return history
 
 
 def create_score(
