@@ -18,16 +18,25 @@ class AcknowledgeRequest(BaseModel):
 
 @router.get("/officers/{officer_id}/alerts")
 def read_open_alerts(officer_id: str, db: Session = Depends(get_db)):
-    alerts = get_open_alerts_for_officer(db, officer_id=officer_id)
+    rows = get_open_alerts_for_officer(db, officer_id=officer_id)
     return [
         {
-            "id": str(a.id),
-            "score_id": str(a.score_id),
-            "severity": a.severity,
-            "status": a.status,
-            "assigned_to": a.assigned_to,
+            # Existing fields — unchanged.
+            "id": str(alert.id),
+            "score_id": str(alert.score_id),
+            "severity": alert.severity,
+            "status": alert.status,
+            "assigned_to": alert.assigned_to,
+            # Who the alert is about. People are recorded under a pseudonym;
+            # there is no real name stored anywhere in this system.
+            "person_id": str(person.id),
+            "pseudonym": person.pseudonym,
+            "district": person.district,
+            # The band from the score that raised this alert. Note this is a
+            # different vocabulary from `severity` above.
+            "band": score.band,
         }
-        for a in alerts
+        for alert, person, score in rows
     ]
 
 

@@ -6,7 +6,8 @@ database. No other file should write raw SQLAlchemy queries directly.
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from .models import Person, Officer, CheckIn, Score, CaseEvent, Alert, AccessLog
 
@@ -62,6 +63,92 @@ def get_person_history(db: Session, person_id: uuid.UUID, accessed_by: str) -> d
             .all()
         ),
     }
+
+
+def person_exists(db: Session, person_id: uuid.UUID) -> bool:
+    """
+    Cheap existence check: a single indexed primary-key lookup selecting no
+    columns beyond the id.
+
+    Callers that only need to know whether a person is real should use this
+    rather than get_person_history, which loads every check-in, score, case
+    event and alert for that person and writes an audit row.
+    """
+    return db.query(Person.id).filter(Person.id == person_id).first() is not None
+
+
+def get_recent_bands(db: Session, person_id: uuid.UUID, within_hours: int) -> list[str]:
+    """
+    Every band this person has been scored into over the last `within_hours`.
+
+    A window rather than just the previous band, because scoring runs on each
+    message and the band can oscillate mid-conversation (elevated -> watch ->
+    elevated). Comparing against only the immediately preceding score would
+    read each bounce as a fresh transition and re-offer support repeatedly.
+    """
+    cutoff = datetime.utcnow() - timedelta(hours=within_hours)
+    rows = (
+        db.query(Score.band)
+        .filter(Score.person_id == person_id, Score.created_at >= cutoff)
+        .all()
+    )
+    return [row[0] for row in rows]
+
+
+def list_people(
+    db: Session,
+    district: str | None = None,
+    state: str | None = None,
+) -> list[tuple[Person, str | None, float | None, datetime | None]]:
+    """
+    People, optionally narrowed by district and/or state, each paired with the
+    band, value and timestamp of their most recent score. All three are None
+    if they have never been scored.
+
+    The latest score is picked with a window function rather than a per-person
+    query, so this stays one round trip however many people match. People with
+    no scores are kept via an outer join — a newly registered person must still
+    appear in a case list.
+
+    Matching on district/state is case-insensitive so query params coming from
+    a UI do not have to match the seed data's capitalisation exactly.
+    """
+    ranked_scores = (
+        select(
+            Score.person_id.label("person_id"),
+            Score.band.label("band"),
+            Score.value.label("value"),
+            Score.created_at.label("created_at"),
+            func.row_number()
+            .over(
+                partition_by=Score.person_id,
+                # id breaks ties when two scores share a timestamp, so the
+                # "latest" is stable rather than arbitrary.
+                order_by=(Score.created_at.desc(), Score.id.desc()),
+            )
+            .label("rank"),
+        )
+        .subquery()
+    )
+
+    query = db.query(
+        Person,
+        ranked_scores.c.band,
+        ranked_scores.c.value,
+        ranked_scores.c.created_at,
+    ).outerjoin(
+        ranked_scores,
+        (ranked_scores.c.person_id == Person.id) & (ranked_scores.c.rank == 1),
+    )
+
+    if district:
+        query = query.filter(func.lower(Person.district) == district.strip().lower())
+    if state:
+        query = query.filter(func.lower(Person.state) == state.strip().lower())
+
+    query = query.order_by(Person.district, Person.pseudonym)
+
+    return [(row.Person, row.band, row.value, row.created_at) for row in query.all()]
 
 
 def create_checkin(
@@ -181,13 +268,23 @@ def acknowledge_alert(
     return alert
 
 
-def get_open_alerts_for_officer(db: Session, officer_id: uuid.UUID) -> list[Alert]:
+def get_open_alerts_for_officer(
+    db: Session, officer_id: uuid.UUID
+) -> list[tuple[Alert, Person, Score]]:
+    """
+    Open alerts visible to this officer, each paired with the person the alert
+    is about and the score that raised it.
+
+    Both joins were already required for district scoping; selecting the joined
+    rows as well means a caller can name the case without a second query.
+    """
     officer = db.query(Officer).filter(Officer.id == officer_id).first()
     if officer is None:
         return []
 
     query = (
-        db.query(Alert)
+        db.query(Alert, Person, Score)
+        .select_from(Alert)
         .join(Score, Alert.score_id == Score.id)
         .join(Person, Score.person_id == Person.id)
         .filter(Alert.status == "open")
@@ -200,4 +297,4 @@ def get_open_alerts_for_officer(db: Session, officer_id: uuid.UUID) -> list[Aler
     else:
         query = query.filter(Alert.assigned_to == str(officer.id))
 
-    return query.all()
+    return [(row.Alert, row.Person, row.Score) for row in query.all()]
