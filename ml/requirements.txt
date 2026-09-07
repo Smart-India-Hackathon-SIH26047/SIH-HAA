@@ -1,0 +1,30 @@
+# ML runtime for backend/app/ml_services.py
+#
+# Install AFTER backend/requirements.txt:
+#     pip install -r backend/requirements.txt
+#     pip install -r ml/requirements.txt
+#
+# These are separated because they are large (torch alone is ~200MB) and are
+# only needed by the process that actually serves /checkin.
+#
+# SYSTEM DEPENDENCY: ffmpeg must be on PATH. Both Whisper and librosa shell
+# out to it for any container that is not a plain .wav — including the .webm
+# and .mp4 that browsers record. Check with `ffmpeg -version`.
+
+# Wav2Vec2 voice-stress model and IndicBERT inference.
+# The default PyPI wheels are CPU-only, which is what this runs on. For CUDA,
+# install torch separately from https://pytorch.org before this file.
+torch>=2.2,<3
+
+# AutoTokenizer / AutoModelForSequenceClassification (IndicBERT, BertTokenizerFast)
+# and Wav2Vec2Model / Wav2Vec2FeatureExtractor (voice stress).
+transformers>=4.40,<5
+
+# The `whisper` module in ml_services.py is openai-whisper, NOT the unrelated
+# PyPI package called "whisper". Getting this wrong gives an import that fails
+# at load_model().
+openai-whisper>=20231117
+
+# Audio loading and resampling for predict_voice_stress.
+librosa>=0.10.1
+soundfile>=0.12.1
