@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saathi — Support when you need it</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F9FD;
+    --bg-deep:#EAF2FB;
+    --surface:#FFFFFF;
+    --surface-sunken:#F0F6FC;
+    --primary:#1E5FA8;
+    --primary-dark:#164A85;
+    --primary-soft:#DCEBFB;
+    --primary-softer:#EEF5FC;
+    --text:#152435;
+    --text-muted:#5B7086;
+    --text-faint:#8CA0B3;
+    --border:#D7E4F0;
+    --border-soft:#E6EFF8;
+    --stable:#2E7D5B;
+    --stable-bg:#E4F3EC;
+    --attention:#9A6B0C;
+    --attention-bg:#FBF1DC;
+    --urgent:#B0392B;
+    --urgent-bg:#FBE6E2;
+    --critical:#8B2635;
+    --critical-bg:#F6DEDF;
+    --orb-a:#8FC1F2;
+    --orb-b:#3E7FC9;
+    --orb-c:#1B4E88;
+    --shadow-1:0 1px 2px rgba(21,54,92,0.06), 0 1px 1px rgba(21,54,92,0.04);
+    --shadow-2:0 6px 20px rgba(21,54,92,0.09);
+    --shadow-3:0 16px 40px rgba(21,54,92,0.14);
+    --radius-sm:10px;
+    --radius-md:16px;
+    --radius-lg:22px;
+    --font-head:'Lora', 'Noto Serif Devanagari', serif;
+    --font-body:'Inter', 'Noto Sans Devanagari', sans-serif;
+    --dur-slow:2.6s;
+    --ease-calm:cubic-bezier(.37,.01,.32,1);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  body[data-lang="hi"]{ font-family:'Noto Sans Devanagari', 'Inter', sans-serif; }
+  body[data-lang="hi"] .font-head{ font-family:'Noto Serif Devanagari','Lora', serif; font-weight:600; }
+
+  .font-head{ font-family:var(--font-head); font-weight:600; letter-spacing:-0.005em; }
+
+  img,svg{display:block; max-width:100%;}
+  button{font-family:inherit;}
+  a{color:inherit;}
+
+  :focus-visible{
+    outline:2.5px solid var(--primary);
+    outline-offset:2px;
+    border-radius:6px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+  }
+
+  .screen{ display:none; min-height:100vh; }
+  .screen.is-active{ display:block; }
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:13px 22px; border-radius:999px; border:1px solid transparent;
+    font-size:15px; font-weight:600; cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+    min-height:44px;
+  }
+  .btn:active{ transform:scale(0.97); }
+  .btn-primary{ background:var(--primary); color:#fff; box-shadow:var(--shadow-1); }
+  .btn-primary:hover{ background:var(--primary-dark); box-shadow:var(--shadow-2); }
+  .btn-secondary{ background:transparent; color:var(--primary-dark); border-color:var(--border); }
+  .btn-secondary:hover{ background:var(--primary-softer); border-color:var(--primary-soft); }
+  .btn-ghost{ background:transparent; color:var(--text-muted); }
+  .btn-ghost:hover{ color:var(--text); background:var(--surface-sunken); }
+  .btn-block{ width:100%; }
+  .btn-sm{ padding:9px 16px; font-size:13.5px; min-height:36px; }
+
+  /* ---------- Top bar (marketing header) ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px clamp(20px,5vw,64px);
+    max-width:1240px; margin:0 auto;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:var(--font-head); font-size:22px; font-weight:560; color:var(--primary-dark); text-decoration:none; }
+  .brand-mark{ width:30px; height:30px; border-radius:50%; background:radial-gradient(circle at 32% 30%, var(--orb-a), var(--orb-b) 60%, var(--orb-c)); box-shadow:0 0 0 4px var(--primary-softer); flex-shrink:0; }
+  .topnav{ display:flex; align-items:center; gap:30px; }
+  .topnav a{ text-decoration:none; color:var(--text-muted); font-size:14.5px; font-weight:500; }
+  .topnav a:hover{ color:var(--text); }
+  .topbar-right{ display:flex; align-items:center; gap:18px; }
+  .lang-switch{ display:flex; border:1px solid var(--border); border-radius:999px; overflow:hidden; }
+  .lang-switch button{ border:none; background:transparent; padding:7px 13px; font-size:13px; font-weight:600; color:var(--text-muted); cursor:pointer; }
+  .lang-switch button.is-active{ background:var(--primary-soft); color:var(--primary-dark); }
+  .privacy-pill{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--stable); background:var(--stable-bg); padding:6px 12px; border-radius:999px; font-weight:600; }
+  .privacy-pill svg{ width:13px; height:13px; }
+  .nav-toggle{ display:none; background:none; border:none; padding:8px; cursor:pointer; }
+
+  /* ---------- Landing hero ---------- */
+  .hero{ position:relative; max-width:1240px; margin:0 auto; padding:clamp(40px,7vw,90px) clamp(20px,5vw,64px) 40px; display:grid; grid-template-columns:1.05fr 0.95fr; gap:40px; align-items:center; }
+  .hero-copy .eyebrow{ color:var(--primary); font-weight:600; font-size:14px; margin-bottom:14px; }
+  .hero-copy h1{ font-size:clamp(34px,5vw,54px); line-height:1.08; margin:0 0 20px; color:var(--text); }
+  .hero-copy p{ font-size:17px; color:var(--text-muted); max-width:46ch; margin:0 0 30px; }
+  .hero-actions{ display:flex; gap:14px; flex-wrap:wrap; }
+  .hero-orb-wrap{ display:flex; align-items:center; justify-content:center; position:relative; height:340px; }
+
+  .orb{ position:relative; width:200px; height:200px; border-radius:50%; }
+
+  /* Ambient outer aura — a soft, wide diffusion layer separate from the ring
+     and the sphere itself, so the orb reads as glowing from within rather
+     than as a flat shape with a drop-shadow. */
+  .orb-glow{
+    position:absolute; inset:-24%; border-radius:50%;
+    background:radial-gradient(circle at 46% 50%, rgba(110,168,227,0.40) 0%, rgba(110,168,227,0.14) 45%, rgba(110,168,227,0) 74%);
+    filter:blur(8px);
+    pointer-events:none;
+    animation:glow-breathe var(--dur-slow) var(--ease-calm) infinite;
+  }
+  .orb-ring{
+    position:absolute; inset:-13%; border-radius:50%;
+    border:1.5px solid rgba(62,127,201,0.26);
+    animation:ring-pulse var(--dur-slow) var(--ease-calm) infinite;
+  }
+  .orb-core{
+    position:absolute; inset:0; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--orb-a) 0%, var(--orb-b) 55%, var(--orb-c) 100%);
+    box-shadow:0 0 50px 8px rgba(62,127,201,0.28), inset 0 -14px 34px rgba(15,45,80,0.28), inset 0 10px 22px rgba(255,255,255,0.10);
+    animation:breathe var(--dur-slow) var(--ease-calm) infinite;
+  }
+  /* Two extra light layers baked into the sphere itself for depth: a soft
+     upper highlight (a light source, not a hard glass reflection) and a
+     deeper lower-right shadow-tone, so the orb reads as a dimensional form
+     rather than a flat gradient disc. */
+  .orb-core::before{
+    content:""; position:absolute; inset:0; border-radius:50%;
+    background:radial-gradient(circle at 32% 24%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.12) 22%, rgba(255,255,255,0) 46%);
+    mix-blend-mode:screen;
+    opacity:.7;
+  }
+  .orb-core::after{
+    content:""; position:absolute; inset:0; border-radius:50%;
+    background:radial-gradient(circle at 64% 72%, rgba(18,55,100,0.32) 0%, rgba(18,55,100,0) 55%);
+  }
+
+  @keyframes glow-breathe{
+    0%,100%{ transform:scale(1); opacity:.72; }
+    50%{ transform:scale(1.05); opacity:.9; }
+  }
+  @keyframes breathe{
+    0%,100%{ transform:scale(1); filter:brightness(1); }
+    50%{ transform:scale(1.03); filter:brightness(1.04); }
+  }
+  @keyframes ring-pulse{
+    0%,100%{ transform:scale(1); opacity:.45; }
+    50%{ transform:scale(1.06); opacity:.15; }
+  }
+
+  /* orb interaction states — kept slow and smooth, never abrupt */
+  .orb.state-listening .orb-core{ animation:listen-glow 2.4s var(--ease-calm) infinite; box-shadow:0 0 64px 12px rgba(62,127,201,0.4), inset 0 -10px 30px rgba(15,45,80,0.22); }
+  @keyframes listen-glow{ 0%,100%{ transform:scale(1.01); filter:brightness(1.02);} 50%{ transform:scale(1.05); filter:brightness(1.12);} }
+  .orb.state-listening .orb-ring{ animation:ring-pulse 2.4s var(--ease-calm) infinite; border-color:rgba(62,127,201,0.4); }
+
+  .orb.state-processing .orb-core{
+    background:conic-gradient(from 0deg, var(--orb-a), var(--orb-c), var(--orb-b), var(--orb-a));
+    animation:spin-slow 3.6s linear infinite;
+  }
+  @keyframes spin-slow{ to{ transform:rotate(360deg);} }
+
+  /* SPEAKING — built to feel like the orb is physically responding to a
+     voice, not like a UI element pulsing. One shared clock drives three
+     layers (core / ring / glow) so they stay perfectly coordinated, but each
+     layer has its own uneven keyframe timing and its own peak sizes, so the
+     combined motion drifts out of lockstep by a beat — core moves first,
+     ring and glow answer a moment later, the way an outward wave would.
+     Two compress-and-rise cycles per loop, each a different depth, so nothing
+     repeats identically and it never reads as a clean mechanical pulse. */
+  .orb.state-speaking .orb-core{ animation:speak-core var(--dur-slow) var(--ease-calm) infinite; }
+  @keyframes speak-core{
+    0%   { transform:scale(0.975) translateY(0px);    filter:brightness(1.00); }
+    9%   { transform:scale(0.93)  translateY(1.5px);  filter:brightness(0.94); }
+    23%  { transform:scale(1.055) translateY(-3.5px); filter:brightness(1.12); }
+    36%  { transform:scale(0.995) translateY(-0.5px); filter:brightness(1.02); }
+    50%  { transform:scale(0.95)  translateY(1px);    filter:brightness(0.96); }
+    65%  { transform:scale(1.035) translateY(-2.5px); filter:brightness(1.08); }
+    80%  { transform:scale(0.985) translateY(0px);    filter:brightness(1.01); }
+    100% { transform:scale(0.975) translateY(0px);    filter:brightness(1.00); }
+  }
+  .orb.state-speaking .orb-ring{ animation:speak-ring var(--dur-slow) var(--ease-calm) infinite; }
+  @keyframes speak-ring{
+    0%   { transform:scale(1);    opacity:.40; }
+    13%  { transform:scale(0.97); opacity:.30; }
+    27%  { transform:scale(1.09); opacity:.60; }
+    40%  { transform:scale(1.02); opacity:.40; }
+    54%  { transform:scale(0.98); opacity:.32; }
+    69%  { transform:scale(1.06); opacity:.52; }
+    84%  { transform:scale(1.0);  opacity:.40; }
+    100% { transform:scale(1);    opacity:.40; }
+  }
+  .orb.state-speaking .orb-glow{ animation:speak-glow var(--dur-slow) var(--ease-calm) infinite; }
+  @keyframes speak-glow{
+    0%   { transform:scale(1);    opacity:.78; }
+    11%  { transform:scale(0.95); opacity:.68; }
+    25%  { transform:scale(1.12); opacity:1;   }
+    38%  { transform:scale(1.02); opacity:.82; }
+    52%  { transform:scale(0.96); opacity:.70; }
+    67%  { transform:scale(1.08); opacity:.92; }
+    82%  { transform:scale(1.0);  opacity:.78; }
+    100% { transform:scale(1);    opacity:.78; }
+  }
+
+  .orb.state-error .orb-core{
+    animation:error-settle 1.1s ease-in-out 1;
+    background:radial-gradient(circle at 35% 30%, #E7B3AE 0%, #C46C60 55%, #8B3A30 100%);
+  }
+  @keyframes error-settle{ 0%{ transform:scale(1);} 40%{ transform:scale(0.97);} 100%{ transform:scale(1);} }
+
+  .section{ max-width:1240px; margin:0 auto; padding:70px clamp(20px,5vw,64px); }
+  .section-head{ max-width:640px; margin:0 auto 40px; text-align:center; }
+  .section-head h2{ font-size:clamp(26px,3.6vw,36px); margin:0 0 12px; }
+  .section-head p{ color:var(--text-muted); font-size:15.5px; margin:0; }
+
+  .how-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  .how-card{ background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-lg); padding:26px 24px; }
+  .how-num{ font-family:var(--font-head); font-size:26px; color:var(--primary); margin-bottom:14px; }
+  .how-card h3{ font-size:17px; margin:0 0 8px; }
+  .how-card p{ font-size:14.5px; color:var(--text-muted); margin:0; }
+
+  .trust-strip{ background:var(--bg-deep); }
+  .trust-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; text-align:center; }
+  .trust-item{ padding:10px; }
+  .trust-item svg{ margin:0 auto 10px; width:26px; height:26px; color:var(--primary); }
+  .trust-item h4{ font-size:14.5px; margin:0 0 6px; }
+  .trust-item p{ font-size:13px; color:var(--text-muted); margin:0; }
+
+  .site-footer{ padding:34px clamp(20px,5vw,64px); text-align:center; color:var(--text-faint); font-size:13px; }
+
+  /* ---------- Login ---------- */
+  .auth-wrap{ min-height:100vh; display:flex; flex-direction:column; }
+  .auth-body{ flex:1; display:flex; align-items:center; justify-content:center; padding:30px 20px; }
+  .auth-card{ width:100%; max-width:440px; background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-lg); padding:36px 32px; box-shadow:var(--shadow-2); }
+  .auth-card h1{ font-size:24px; margin:0 0 6px; text-align:center; }
+  .auth-sub{ text-align:center; color:var(--text-muted); font-size:14px; margin:0 0 26px; }
+  .segmented{ display:flex; background:var(--surface-sunken); border-radius:999px; padding:4px; margin-bottom:26px; }
+  .segmented button{ flex:1; border:none; background:transparent; padding:10px 8px; border-radius:999px; font-size:13.5px; font-weight:600; color:var(--text-muted); cursor:pointer; transition:background .2s,color .2s; }
+  .segmented button.is-active{ background:var(--surface); color:var(--primary-dark); box-shadow:var(--shadow-1); }
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:7px; }
+  .field input{ width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:15px; background:var(--bg); color:var(--text); }
+  .field input:focus{ border-color:var(--primary); background:var(--surface); }
+  .auth-demo{ text-align:center; font-size:12.5px; color:var(--text-faint); margin-top:16px; }
+  .anon-entry-link{ display:block; width:100%; text-align:center; background:none; border:none; color:var(--primary-dark); font-size:13.5px; font-weight:600; margin-top:14px; padding:8px; cursor:pointer; }
+  .anon-entry-link:hover{ text-decoration:underline; }
+
+  .consent-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding:16px 0; border-bottom:1px solid var(--border-soft); }
+  .consent-row:last-of-type{ border-bottom:none; }
+  .consent-row h3{ font-size:14.5px; margin:0 0 4px; }
+  .consent-row p{ font-size:13px; color:var(--text-muted); margin:0; line-height:1.5; }
+  .consent-required-pill{ flex-shrink:0; font-size:11.5px; font-weight:700; color:var(--text-muted); background:var(--surface-sunken); padding:6px 12px; border-radius:999px; white-space:nowrap; }
+  .consent-footnote{ font-size:12.5px; color:var(--primary-dark); background:var(--primary-softer); border-radius:12px; padding:12px 14px; margin-top:16px; line-height:1.55; }
+  .switch{ position:relative; width:44px; height:25px; flex-shrink:0; }
+  .switch input{ opacity:0; width:100%; height:100%; margin:0; cursor:pointer; position:absolute; z-index:2; }
+  .switch .track{ position:absolute; inset:0; background:var(--border); border-radius:999px; transition:background .2s; }
+  .switch .thumb{ position:absolute; top:3px; left:3px; width:19px; height:19px; border-radius:50%; background:#fff; box-shadow:var(--shadow-1); transition:transform .2s; }
+  .switch input:checked + .track{ background:var(--primary); }
+  .switch input:checked ~ .thumb{ transform:translateX(19px); }
+  .back-link{ display:inline-flex; align-items:center; gap:6px; font-size:13.5px; color:var(--text-muted); text-decoration:none; padding:20px clamp(20px,5vw,64px) 0; }
+
+  /* ---------- Beneficiary shell: calm topbar + off-canvas drawer ---------- */
+  .ben-shell{ display:flex; flex-direction:column; min-height:100vh; min-height:100dvh; background:var(--bg); }
+
+  .ben-topbar{
+    display:flex; align-items:center; gap:10px; flex-wrap:nowrap;
+    padding:13px 18px; border-bottom:1px solid var(--border-soft);
+    background:var(--surface); position:sticky; top:0; z-index:30;
+  }
+  .ben-menu-btn{ background:none; border:none; padding:8px; border-radius:10px; cursor:pointer; color:var(--text-muted); display:flex; flex-shrink:0; min-width:40px; min-height:40px; align-items:center; justify-content:center; }
+  .ben-menu-btn:hover{ background:var(--surface-sunken); color:var(--text); }
+  .ben-brand{ font-size:16.5px; display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .ben-brand .brand-mark{ width:20px; height:20px; }
+  .ben-topbar-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .lang-switch.compact button{ padding:6px 10px; font-size:12px; }
+
+  .private-pill{
+    display:flex; align-items:center; gap:7px; border:1px solid var(--border); background:var(--surface);
+    border-radius:999px; padding:8px 14px; font-size:13px; font-weight:600; color:var(--text-muted);
+    cursor:pointer; transition:background .18s ease, border-color .18s ease, color .18s ease; min-height:38px;
+  }
+  .private-pill:hover{ background:var(--surface-sunken); }
+  .private-pill.is-on{ background:var(--primary-soft); border-color:var(--primary-soft); color:var(--primary-dark); }
+  .private-pill svg{ width:15px; height:15px; flex-shrink:0; }
+
+  .private-popover{
+    position:fixed; top:64px; right:16px; max-width:270px; background:var(--text); color:#fff;
+    padding:13px 14px; border-radius:12px; font-size:12.5px; line-height:1.55; box-shadow:var(--shadow-3);
+    z-index:70; display:none; align-items:flex-start; gap:8px;
+  }
+  .private-popover.is-visible{ display:flex; animation:pop-in .2s ease; }
+  @keyframes pop-in{ from{ opacity:0; transform:translateY(-4px); } to{ opacity:1; transform:translateY(0); } }
+  .private-popover p{ margin:0; flex:1; }
+  .popover-close{ background:none; border:none; color:rgba(255,255,255,.75); cursor:pointer; font-size:16px; line-height:1; padding:2px; flex-shrink:0; }
+  .popover-close:hover{ color:#fff; }
+
+  .ben-drawer-overlay{ position:fixed; inset:0; background:rgba(21,40,61,.35); z-index:55; display:none; }
+  .ben-drawer-overlay.is-open{ display:block; }
+  .ben-drawer{
+    position:fixed; top:0; left:0; bottom:0; width:250px; background:var(--surface); z-index:60;
+    padding:20px 16px; transform:translateX(-100%); transition:transform .25s var(--ease-calm);
+    display:flex; flex-direction:column;
+  }
+  .ben-drawer.is-open{ transform:translateX(0); box-shadow:var(--shadow-3); }
+  .ben-drawer .brand{ padding:6px 10px 22px; font-size:18px; }
+  .anon-id-badge{ margin:-14px 10px 16px; font-size:11.5px; font-weight:600; color:var(--primary-dark); background:var(--primary-softer); border-radius:999px; padding:5px 12px; display:inline-block; letter-spacing:.01em; }
+  .side-nav{ display:flex; flex-direction:column; gap:2px; list-style:none; margin:0; padding:0; flex:1; }
+  .side-nav button{ display:flex; align-items:center; gap:11px; width:100%; text-align:left; padding:12px 13px; border-radius:11px; border:none; background:transparent; color:var(--text-muted); font-size:14.5px; font-weight:500; cursor:pointer; min-height:44px; }
+  .side-nav button svg{ width:18px; height:18px; flex-shrink:0; }
+  .side-nav button:hover{ background:var(--surface-sunken); color:var(--text); }
+  .side-nav button.is-active{ background:var(--primary-soft); color:var(--primary-dark); font-weight:600; }
+  .side-foot{ border-top:1px solid var(--border-soft); padding-top:12px; margin-top:12px; }
+
+  .ben-main{ flex:1; display:flex; flex-direction:column; padding:clamp(18px,4vw,40px); max-width:640px; margin:0 auto; width:100%; }
+  .sub-view{ display:none; flex:1; flex-direction:column; }
+  .sub-view.is-active{ display:flex; }
+
+  /* Check-in: the whole point of the app — kept spacious and uncluttered */
+  #ben-view-checkin{ justify-content:space-between; gap:18px; min-height:calc(100dvh - 68px); padding-bottom:8px; }
+  .checkin-head{ text-align:center; padding-top:clamp(6px,3vh,28px); }
+  .checkin-head h1{ font-size:clamp(23px,3.4vw,30px); margin:0 0 8px; }
+  .checkin-head p{ color:var(--text-muted); font-size:15px; margin:0; }
+  .checkin-middle{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; min-height:180px; }
+
+  .orb-stage{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .orb-stage .orb{ width:164px; height:164px; }
+  .orb-caption{ font-size:13.5px; color:var(--text-faint); font-weight:500; min-height:18px; text-align:center; }
+  .private-note{ font-size:12px; color:var(--primary-dark); font-weight:500; text-align:center; max-width:32ch; }
+
+  .checkin-bottom{ display:flex; flex-direction:column; gap:12px; }
+  .chat-log{ max-width:520px; margin:0 auto; width:100%; display:flex; flex-direction:column; gap:9px; max-height:34vh; overflow-y:auto; padding:2px; }
+  .chat-bubble{ padding:11px 15px; border-radius:16px; font-size:14.5px; max-width:82%; line-height:1.5; }
+  .chat-bubble.from-user{ align-self:flex-end; background:var(--primary); color:#fff; border-bottom-right-radius:5px; }
+  .chat-bubble.from-saathi{ align-self:flex-start; background:var(--surface); border:1px solid var(--border-soft); color:var(--text); border-bottom-left-radius:5px; }
+  .chat-bubble.from-saathi.safety{ background:var(--primary-softer); border-color:var(--primary-soft); max-width:92%; }
+
+  .composer{
+    max-width:520px; margin:0 auto; width:100%; display:flex; align-items:center; gap:10px;
+    background:var(--surface); border:1px solid var(--border); border-radius:999px;
+    padding:7px 8px 7px 20px; box-shadow:var(--shadow-1); position:sticky;
+    bottom:calc(14px + env(safe-area-inset-bottom,0px));
+  }
+  .composer input{ flex:1; border:none; background:transparent; font-size:15px; outline:none; color:var(--text); min-width:0; }
+  .mic-btn, .send-btn{ width:42px; height:42px; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+  .mic-btn{ background:var(--primary-softer); color:var(--primary-dark); }
+  .mic-btn.is-listening{ background:var(--primary); color:#fff; animation:mic-pulse 1.6s var(--ease-calm) infinite; }
+  @keyframes mic-pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(30,95,168,.32);} 50%{ box-shadow:0 0 0 9px rgba(30,95,168,0);} }
+  .send-btn{ background:var(--primary); color:#fff; }
+  .send-btn:disabled{ opacity:.4; cursor:default; }
+  .mic-btn svg, .send-btn svg{ width:18px; height:18px; }
+  .mic-hint{ text-align:center; font-size:12px; color:var(--text-faint); min-height:16px; }
+
+  .identity-prompt{ max-width:520px; margin:0 auto; width:100%; background:var(--primary-softer); border:1px solid var(--primary-soft); border-radius:14px; padding:14px 16px; }
+  .identity-prompt p{ font-size:13px; color:var(--primary-dark); margin:0 0 10px; line-height:1.5; }
+  .identity-prompt-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .identity-prompt-form{ display:flex; gap:8px; margin-top:10px; }
+  .identity-prompt-form input{ flex:1; min-width:0; border:1px solid var(--border); border-radius:10px; padding:9px 12px; font-size:13.5px; background:var(--surface); color:var(--text); }
+
+  .card{ background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-lg); padding:24px; }
+  .card + .card{ margin-top:16px; }
+  .card h2{ font-size:17px; margin:0 0 4px; }
+  .card .muted{ color:var(--text-muted); font-size:13.5px; margin:0 0 18px; }
+
+  .status-pill{ display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:700; padding:7px 14px; border-radius:999px; }
+  .status-pill.stable{ background:var(--stable-bg); color:var(--stable); }
+  .status-pill.attention{ background:var(--attention-bg); color:var(--attention); }
+  .status-pill.followup{ background:var(--attention-bg); color:var(--attention); }
+  .status-pill.urgent{ background:var(--urgent-bg); color:var(--urgent); }
+  .status-pill.critical{ background:var(--critical-bg); color:var(--critical); }
+  .status-pill .dot{ width:7px; height:7px; border-radius:50%; background:currentColor; }
+
+  /* Support-status card: plain language first, numbers tucked behind "view details" */
+  .support-msg{ font-size:14.5px; color:var(--text-muted); margin:12px 0 16px; max-width:44ch; line-height:1.55; }
+  .details-panel{ margin-top:16px; padding-top:16px; border-top:1px solid var(--border-soft); }
+  .details-panel[hidden]{ display:none; }
+
+  .priority-row{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; }
+  .priority-ring{ position:relative; width:88px; height:88px; flex-shrink:0; }
+  .priority-ring svg{ transform:rotate(-90deg); }
+  .priority-ring .num{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; }
+  .priority-ring .num b{ font-size:19px; font-family:var(--font-head); }
+  .priority-ring .num small{ font-size:10px; color:var(--text-faint); }
+
+  .stat-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:14px; margin-top:18px; }
+  .stat-box{ background:var(--surface-sunken); border-radius:12px; padding:14px 16px; }
+  .stat-box .label{ font-size:12px; color:var(--text-muted); margin-bottom:5px; }
+  .stat-box .val{ font-size:16px; font-weight:600; }
+
+  /* ---------- Officer dashboard ---------- */
+  .officer-shell{ min-height:100vh; }
+  .officer-topbar{ background:var(--surface); border-bottom:1px solid var(--border-soft); padding:16px clamp(18px,3vw,40px); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  .officer-info{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .officer-info .who{ font-weight:600; font-size:14.5px; }
+  .officer-info .meta{ font-size:12.5px; color:var(--text-muted); display:flex; gap:14px; flex-wrap:wrap; }
+  .officer-main{ padding:clamp(18px,3vw,40px); max-width:1280px; margin:0 auto; }
+
+  .summary-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:26px; }
+  .summary-card{ background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-md); padding:18px 20px; }
+  .summary-card .n{ font-family:var(--font-head); font-size:30px; line-height:1; margin-bottom:6px; }
+  .summary-card .l{ font-size:13px; color:var(--text-muted); }
+  .summary-card.crit .n{ color:var(--critical); }
+  .summary-card.high .n{ color:var(--urgent); }
+  .summary-card.follow .n{ color:var(--attention); }
+  .summary-card.total .n{ color:var(--primary); }
+
+  .toolbar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  .toolbar select{ border:1px solid var(--border); background:var(--surface); border-radius:999px; padding:9px 14px; font-size:13.5px; color:var(--text); cursor:pointer; }
+  .toolbar select:focus{ border-color:var(--primary); }
+
+  .case-table{ background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-lg); overflow:hidden; }
+  .case-row{ display:grid; grid-template-columns:1.1fr 1.3fr 0.9fr 1.1fr 1fr 0.7fr 0.9fr; gap:10px; align-items:center; padding:15px 20px; border-bottom:1px solid var(--border-soft); font-size:13.5px; }
+  .case-row.head{ background:var(--surface-sunken); font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-faint); font-weight:700; }
+  .case-row:last-child{ border-bottom:none; }
+  .case-row:not(.head):hover{ background:var(--primary-softer); cursor:pointer; }
+  .case-ref{ font-weight:700; font-family:var(--font-head); }
+  .trend-mini{ display:flex; align-items:center; gap:2px; }
+  .trend-mini span{ display:block; width:4px; border-radius:2px; background:var(--primary-soft); }
+
+  .case-detail-panel{ position:fixed; inset:0; background:rgba(21,40,61,0.35); display:none; align-items:flex-start; justify-content:flex-end; z-index:50; }
+  .case-detail-panel.is-open{ display:flex; }
+  .case-detail-card{ background:var(--surface); width:min(480px,100%); height:100%; overflow-y:auto; padding:26px; box-shadow:var(--shadow-3); animation:slide-in .25s ease; }
+  @keyframes slide-in{ from{ transform:translateX(24px); opacity:0;} to{ transform:translateX(0); opacity:1;} }
+  .cd-head{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; }
+  .cd-close{ background:var(--surface-sunken); border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .cd-alert{ background:var(--critical-bg); color:var(--critical); border-radius:12px; padding:12px 14px; font-size:13px; font-weight:600; margin-bottom:16px; display:none; }
+  .cd-alert.is-visible{ display:block; }
+  .cd-hist{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+  .cd-hist-item{ display:flex; justify-content:space-between; font-size:13px; padding:10px 12px; background:var(--surface-sunken); border-radius:10px; }
+  .cd-hist-item .d{ color:var(--text-muted); }
+
+  .alert-item{ border:1px solid var(--border-soft); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+  .alert-item-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .alert-item-title{ font-size:13.5px; font-weight:700; }
+  .alert-item-meta{ font-size:12px; color:var(--text-muted); margin-bottom:10px; }
+  .severity-chip{ font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:.02em; }
+  .severity-chip.low{ background:var(--stable-bg); color:var(--stable); }
+  .severity-chip.medium{ background:var(--attention-bg); color:var(--attention); }
+  .severity-chip.high{ background:var(--urgent-bg); color:var(--urgent); }
+  .severity-chip.critical{ background:var(--critical-bg); color:var(--critical); }
+  .alert-decision-row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .alert-reason-box{ width:100%; margin-top:8px; display:none; }
+  .alert-reason-box.is-visible{ display:block; }
+  .alert-reason-box textarea{ width:100%; border:1px solid var(--border); border-radius:10px; padding:9px 12px; font-size:13px; font-family:inherit; resize:vertical; min-height:56px; background:var(--bg); color:var(--text); }
+  .alert-reason-error{ color:var(--urgent); font-size:12px; margin-top:5px; display:none; }
+  .alert-reason-error.is-visible{ display:block; }
+  .alert-decided{ font-size:12.5px; color:var(--text-muted); background:var(--surface-sunken); padding:8px 12px; border-radius:10px; }
+
+  /* Responsive — designed intentionally at each range, not just scaled down */
+  @media (max-width:1024px){
+    .hero{ grid-template-columns:1fr; }
+    .hero-orb-wrap{ height:220px; order:-1; }
+    .how-grid{ grid-template-columns:1fr 1fr; }
+    .trust-grid{ grid-template-columns:1fr 1fr; }
+    .summary-grid{ grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:900px){
+    .case-row{ grid-template-columns:1fr 1fr; grid-auto-rows:auto; row-gap:6px; }
+    .case-row.head{ display:none; }
+    .case-row > div::before{ content:attr(data-label); display:block; font-size:10.5px; color:var(--text-faint); font-weight:700; text-transform:uppercase; }
+  }
+  @media (max-width:760px){
+    .topnav{ display:none; }
+    .how-grid{ grid-template-columns:1fr; }
+    .trust-grid{ grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:640px){
+    .summary-grid{ grid-template-columns:1fr 1fr; }
+    .case-detail-card{ width:100%; }
+    .hero-actions .btn{ width:100%; }
+    .hero-actions{ flex-direction:column; }
+  }
+  @media (max-width:430px){
+    .orb-stage .orb{ width:140px; height:140px; }
+    .checkin-head h1{ font-size:22px; }
+    .composer{ padding:6px 6px 6px 16px; }
+    .summary-grid{ grid-template-columns:1fr 1fr; gap:10px; }
+    .summary-card{ padding:14px 16px; }
+    .summary-card .n{ font-size:24px; }
+    .toolbar select{ flex:1 1 45%; }
+  }
+  @media (max-width:400px){
+    .ben-topbar{ flex-wrap:wrap; row-gap:10px; }
+    .ben-topbar-actions{ width:100%; margin-left:0; justify-content:space-between; }
+  }
+  @media (max-width:360px){
+    .ben-brand .brand-text{ display:none; }
+    .orb-stage .orb{ width:120px; height:120px; }
+  }
+</style>
+</head>
+<body data-lang="en">
+
+<!-- ============ LANDING ============ -->
+<section class="screen is-active" id="screen-landing">
+  <header class="topbar">
+    <a href="#" class="brand"><span class="brand-mark"></span>Saathi</a>
+    <nav class="topnav">
+      <a href="#about" data-i18n="nav_about">About</a>
+      <a href="#how" data-i18n="nav_how">How It Works</a>
+      <a href="#support" data-i18n="nav_support">Support</a>
+    </nav>
+    <div class="topbar-right">
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button data-lang-btn="en" class="is-active">English</button>
+        <button data-lang-btn="hi">हिंदी</button>
+      </div>
+      <span class="privacy-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>
+        <span data-i18n="privacy_indicator">Privacy &amp; Security</span>
+      </span>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow" data-i18n="eyebrow">A confidential support platform</div>
+      <h1 class="font-head">
+        <span data-i18n="hero_headline_line1">Support when you need it.</span><br>
+        <span data-i18n="hero_headline_line2">Help when it matters.</span>
+      </h1>
+      <p data-i18n="hero_sub">Saathi listens, checks in regularly, and quietly connects you with the right support when it matters most — at your own pace, in your own words.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="btn-get-started" data-i18n="cta_primary">Get Started</button>
+        <button class="btn btn-secondary" id="btn-how-it-works" data-i18n="cta_secondary">Learn How It Works</button>
+      </div>
+    </div>
+    <div class="hero-orb-wrap">
+      <div class="orb state-idle" id="hero-orb"><div class="orb-glow"></div><div class="orb-ring"></div><div class="orb-core"></div></div>
+    </div>
+  </div>
+
+  <div class="section" id="how">
+    <div class="section-head">
+      <h2 class="font-head" data-i18n="how_title">A simple, steady rhythm of support</h2>
+      <p data-i18n="how_sub">No forms to fill out under pressure. Just a calm space that checks in and listens.</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num font-head">01</div>
+        <h3 data-i18n="how1_h">Check in, in your own words</h3>
+        <p data-i18n="how1_p">Talk or type — Saathi asks gentle, simple questions about how you're doing.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num font-head">02</div>
+        <h3 data-i18n="how2_h">Saathi listens quietly</h3>
+        <p data-i18n="how2_p">Your responses help build a picture of your well-being over time, privately.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num font-head">03</div>
+        <h3 data-i18n="how3_h">Support reaches you sooner</h3>
+        <p data-i18n="how3_p">If you may need attention, the right officer is notified so help can reach you faster.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section trust-strip" id="about">
+    <div class="trust-grid">
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>
+        <h4 data-i18n="trust1_h">Confidential by design</h4>
+        <p data-i18n="trust1_p">You control what is shared, and when.</p>
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <h4 data-i18n="trust2_h">Available anytime</h4>
+        <p data-i18n="trust2_p">Check in whenever suits you, day or night.</p>
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="10" cy="7" r="3.2"/><path d="M17 8a3 3 0 100-6"/></svg>
+        <h4 data-i18n="trust3_h">Backed by real officers</h4>
+        <p data-i18n="trust3_p">A trained human is always behind the response.</p>
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21c-4-3-8-6.5-8-11a5 5 0 019-3 5 5 0 019 3c0 4.5-4 8-8 11z"/></svg>
+        <h4 data-i18n="trust4_h">Built with care</h4>
+        <p data-i18n="trust4_p">Designed for people in vulnerable moments.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer" id="support" data-i18n="footer_text">Saathi — a Government of India support initiative. If this is an emergency, please contact local authorities directly.</footer>
+</section>
+
+<!-- ============ LOGIN ============ -->
+<section class="screen" id="screen-login">
+  <div class="auth-wrap">
+    <a href="#" class="back-link" id="login-back">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+      <span data-i18n="back">Back</span>
+    </a>
+    <div class="auth-body">
+      <div class="auth-card">
+        <h1 class="font-head" data-i18n="login_title">Continue to Saathi</h1>
+        <p class="auth-sub" data-i18n="login_sub">Choose how you'd like to sign in</p>
+        <div class="segmented" role="tablist">
+          <button data-role-btn="beneficiary" class="is-active" data-i18n="login_beneficiary">Beneficiary</button>
+          <button data-role-btn="officer" data-i18n="login_officer">Government Officer</button>
+        </div>
+
+        <div id="form-beneficiary">
+          <div class="field">
+            <label data-i18n="label_ref_id">Victim Reference ID</label>
+            <input type="text" placeholder="PT-0000" id="input-ref-id">
+          </div>
+          <div class="field">
+            <label data-i18n="label_pin">Security PIN / OTP</label>
+            <input type="password" placeholder="••••••" id="input-pin">
+          </div>
+          <button class="btn btn-primary btn-block" id="btn-login-beneficiary" data-i18n="btn_continue">Continue</button>
+        </div>
+
+        <div id="form-officer" style="display:none;">
+          <div class="field">
+            <label data-i18n="label_officer_id">Officer ID</label>
+            <input type="text" placeholder="OFC-0000" id="input-officer-id">
+          </div>
+          <div class="field">
+            <label data-i18n="label_password">Password / OTP</label>
+            <input type="password" placeholder="••••••" id="input-officer-pw">
+          </div>
+          <button class="btn btn-primary btn-block" id="btn-login-officer" data-i18n="btn_continue">Continue</button>
+        </div>
+
+        <p class="auth-demo" data-i18n="demo_note">Demo access — no real credentials required</p>
+        <button class="anon-entry-link" id="btn-anon-entry" data-i18n="anon_entry_link" type="button">Continue without an ID →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONSENT ============ -->
+<section class="screen" id="screen-consent">
+  <div class="auth-wrap">
+    <a href="#" class="back-link" id="consent-back">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+      <span data-i18n="back">Back</span>
+    </a>
+    <div class="auth-body">
+      <div class="auth-card" style="max-width:480px;">
+        <h1 class="font-head" data-i18n="consent_title">Before we begin</h1>
+        <p class="auth-sub" id="consent-subtitle" data-i18n="consent_subtitle_identified">Just a couple of quick permissions before we start.</p>
+
+        <div class="consent-row">
+          <div>
+            <h3 data-i18n="consent_monitoring_title">Support check-in monitoring</h3>
+            <p data-i18n="consent_monitoring_desc">Lets Saathi track your check-ins over time so the support team can notice if you need extra help.</p>
+          </div>
+          <span class="consent-required-pill" data-i18n="consent_required_label">Required</span>
+        </div>
+
+        <div class="consent-row" id="consent-safety-row">
+          <div>
+            <h3 data-i18n="consent_safety_title">Safety-support detection</h3>
+            <p data-i18n="consent_safety_desc">Lets Saathi notice language that suggests you may be in crisis, so it can offer helpline numbers.</p>
+          </div>
+          <span class="consent-required-pill" id="consent-safety-required-pill" data-i18n="consent_required_label" hidden>Required</span>
+          <label class="switch" id="consent-safety-switch">
+            <input type="checkbox" id="consent-safety-toggle" checked>
+            <span class="track"></span><span class="thumb"></span>
+          </label>
+        </div>
+
+        <p class="consent-footnote" id="consent-anon-note" data-i18n="consent_anon_note" hidden>You won't be asked for your name or any identifying details. Saathi will use a random ID for this session only.</p>
+
+        <button class="btn btn-primary btn-block" id="btn-consent-continue" data-i18n="consent_continue" style="margin-top:18px;">Continue</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BENEFICIARY APP ============ -->
+<section class="screen" id="screen-beneficiary">
+  <div class="ben-shell">
+
+    <header class="ben-topbar">
+      <button class="ben-menu-btn" id="ben-menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="ben-drawer">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <a href="#" class="brand ben-brand"><span class="brand-mark"></span><span class="brand-text">Saathi</span></a>
+      <div class="ben-topbar-actions">
+        <div class="lang-switch compact" role="group" aria-label="Language">
+          <button data-lang-btn="en" class="is-active">EN</button>
+          <button data-lang-btn="hi">हिं</button>
+        </div>
+        <button class="private-pill" id="private-mode-btn" aria-pressed="false" aria-describedby="private-popover">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>
+          <span id="private-mode-label" data-i18n="private_mode_label">Private Mode</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="private-popover" id="private-popover" role="status">
+      <p data-i18n="privacy_popover_text">Private Mode keeps this conversation separate from your saved information.</p>
+      <button class="popover-close" id="private-popover-close" aria-label="Close">&times;</button>
+    </div>
+
+    <div class="ben-drawer-overlay" id="ben-drawer-overlay"></div>
+    <nav class="ben-drawer" id="ben-drawer" aria-label="Saathi menu">
+      <span class="brand"><span class="brand-mark" style="width:22px;height:22px;"></span>Saathi</span>
+      <div class="anon-id-badge" id="anon-id-badge" hidden></div>
+      <ul class="side-nav">
+        <li><button data-ben-view="checkin" class="is-active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+          <span data-i18n="nav_checkin">Check-in</span></button></li>
+        <li><button data-ben-view="status">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 4 8-9"/></svg>
+          <span data-i18n="nav_status">My Status</span></button></li>
+        <li><button data-ben-view="support">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span data-i18n="nav_support">Support</span></button></li>
+      </ul>
+      <div class="side-foot">
+        <button class="btn btn-ghost btn-block" id="btn-signout-beneficiary" style="justify-content:flex-start;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <span id="ben-signout-label" data-i18n="nav_signout">Sign Out</span>
+        </button>
+      </div>
+    </nav>
+
+    <main class="ben-main">
+
+      <!-- Check-in — the home screen: just the person, the orb, and a way to talk -->
+      <div class="sub-view is-active" id="ben-view-checkin">
+        <div class="checkin-head">
+          <h1 class="font-head" data-i18n="beneficiary_greeting">How are you feeling today?</h1>
+          <p data-i18n="beneficiary_sub">Take your time. Saathi is here to listen, whenever you're ready.</p>
+        </div>
+
+        <div class="checkin-middle">
+          <div class="orb-stage">
+            <div class="orb state-idle" id="chat-orb"><div class="orb-glow"></div><div class="orb-ring"></div><div class="orb-core"></div></div>
+            <div class="orb-caption" id="orb-caption" aria-live="polite" data-i18n="orb_idle_caption">Saathi is ready whenever you are.</div>
+          </div>
+          <div class="private-note" id="private-note" hidden data-i18n="privacy_on_short">Private mode is on — this conversation won't be saved.</div>
+        </div>
+
+        <div class="checkin-bottom">
+          <div class="chat-log" id="chat-log" aria-live="polite"></div>
+
+          <div class="identity-prompt" id="identity-prompt" hidden>
+            <p data-i18n="identity_prompt_text">Would you like a counsellor to be able to follow up with you directly? Sharing is completely optional.</p>
+            <div class="identity-prompt-actions" id="identity-prompt-actions">
+              <button class="btn btn-secondary btn-sm" id="btn-identity-share" data-i18n="identity_share_btn">Share contact details</button>
+              <button class="btn btn-ghost btn-sm" id="btn-identity-decline" data-i18n="identity_stay_anon_btn">Stay anonymous</button>
+            </div>
+            <div class="identity-prompt-form" id="identity-prompt-form" hidden>
+              <input type="text" id="identity-contact-input" data-i18n-placeholder="identity_form_placeholder" placeholder="Name or phone number">
+              <button class="btn btn-primary btn-sm" id="btn-identity-confirm" data-i18n="identity_confirm_btn">Confirm</button>
+            </div>
+          </div>
+
+          <div class="composer">
+            <button class="mic-btn" id="btn-mic" aria-label="Speak to Saathi">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 003-3V6a3 3 0 00-6 0v6a3 3 0 003 3z"/><path d="M19 11a7 7 0 01-14 0M12 18v3"/></svg>
+            </button>
+            <input type="text" id="chat-input" data-i18n-placeholder="chat_placeholder" placeholder="Tell Saathi how you're feeling...">
+            <button class="send-btn" id="btn-send" aria-label="Send" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            </button>
+          </div>
+          <div class="mic-hint" id="mic-hint"></div>
+        </div>
+      </div>
+
+      <!-- My Status -->
+      <div class="sub-view" id="ben-view-status">
+        <div class="card">
+          <h2 data-i18n="support_status_title">Your support status</h2>
+          <p class="muted" data-i18n="support_status_note">Based on your recent check-ins. This is a support indicator, not a diagnosis.</p>
+          <span class="status-pill attention" id="ben-status-pill"><span class="dot"></span><span id="ben-status-label" data-i18n="band_watch">Watch</span></span>
+          <p class="support-msg" id="ben-support-msg" data-i18n="support_msg_watch">Things may be a little harder lately. Saathi will keep checking in gently.</p>
+
+          <button class="btn btn-ghost btn-sm" id="ben-details-toggle" aria-expanded="false" aria-controls="ben-details-panel" data-i18n="view_details" style="padding-left:0;">View details</button>
+
+          <div class="details-panel" id="ben-details-panel" hidden>
+            <div class="stat-grid" style="margin-top:0;">
+              <div class="stat-box">
+                <div class="label" data-i18n="recent_checkin_label">Recent Check-in</div>
+                <div class="val" id="ben-last-checkin">2 days ago</div>
+              </div>
+              <div class="stat-box">
+                <div class="label" data-i18n="trend_label">Trend</div>
+                <div class="val" id="ben-trend" data-i18n="trend_improving">Improving</div>
+              </div>
+            </div>
+            <div class="priority-row" style="margin-top:18px;">
+              <div class="priority-ring">
+                <svg width="88" height="88" viewBox="0 0 88 88">
+                  <circle cx="44" cy="44" r="38" fill="none" stroke="var(--border)" stroke-width="7"/>
+                  <circle id="ben-score-ring" cx="44" cy="44" r="38" fill="none" stroke="var(--attention)" stroke-width="7" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="143"/>
+                </svg>
+                <div class="num"><b id="ben-score-num">40</b><small>/100</small></div>
+              </div>
+              <div>
+                <div style="font-size:12px;color:var(--text-faint);margin-bottom:3px;" data-i18n="priority_score_label">Support Score</div>
+                <p class="muted" style="margin:0;max-width:30ch;" data-i18n="priority_note">This score is only one input the support team uses — it never decides anything on its own.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Support -->
+      <div class="sub-view" id="ben-view-support">
+        <div class="card">
+          <h2 data-i18n="support_title">Support &amp; Resources</h2>
+          <p class="muted" data-i18n="support_sub">If you need to speak with someone directly, these are always available — any time, in confidence.</p>
+          <div class="stat-grid">
+            <div class="stat-box"><div class="label" data-i18n="support_helpline1_label">Tele-MANAS (mental health support)</div><div class="val" style="font-size:14px;" data-i18n="support_helpline1_val">14416 or 1-800-891-4416</div></div>
+            <div class="stat-box"><div class="label" data-i18n="support_helpline2_label">Emergency</div><div class="val" data-i18n="support_helpline2_val">112</div></div>
+            <div class="stat-box"><div class="label" data-i18n="support_officer">Your Assigned Officer</div><div class="val">Dist. North · OFC-1042</div></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</section>
+
+<!-- ============ OFFICER DASHBOARD ============ -->
+<section class="screen" id="screen-officer">
+  <div class="officer-shell">
+    <div class="officer-topbar">
+      <div class="officer-info">
+        <span class="brand" style="font-size:18px;"><span class="brand-mark" style="width:20px;height:20px;"></span>Saathi</span>
+        <div>
+          <div class="who">Officer Priya Sharma · <span data-i18n="officer_role_label">District Officer</span> · OFC-1042</div>
+          <div class="meta">
+            <span data-i18n="officer_assigned_area">Assigned Area</span>: District North &nbsp;·&nbsp;
+            <span data-i18n="officer_last_updated">Last Updated</span>: <span id="officer-last-updated">just now</span> &nbsp;·&nbsp;
+            <span data-i18n="officer_system_status">System Status</span>: <span style="color:var(--stable);font-weight:600;" data-i18n="status_operational">Operational</span>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button data-lang-btn="en" class="is-active">English</button>
+          <button data-lang-btn="hi">हिंदी</button>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-signout-officer" data-i18n="nav_signout">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="officer-main">
+      <h1 class="font-head" style="font-size:24px;margin:0 0 4px;" data-i18n="officer_title">Case Monitoring</h1>
+      <p style="color:var(--text-muted);font-size:14px;margin:0 0 20px;" data-i18n="officer_subtitle">Sorted to show who may need attention first.</p>
+
+      <div class="summary-grid">
+        <div class="summary-card total"><div class="n" id="sum-total">—</div><div class="l" data-i18n="summary_attention">Cases Flagged</div></div>
+        <div class="summary-card high"><div class="n" id="sum-elevated">—</div><div class="l" data-i18n="summary_high">Elevated</div></div>
+        <div class="summary-card crit"><div class="n" id="sum-priority">—</div><div class="l" data-i18n="summary_critical">Priority</div></div>
+        <div class="summary-card follow"><div class="n" id="sum-alerts">—</div><div class="l" data-i18n="summary_followup">Open Alerts</div></div>
+      </div>
+
+      <div class="toolbar">
+        <input type="search" id="case-search" data-i18n-placeholder="search_placeholder" placeholder="Search by ID or district" style="border:1px solid var(--border); background:var(--surface); border-radius:999px; padding:9px 16px; font-size:13.5px; min-width:180px; flex:1 1 200px;">
+        <select id="filter-priority">
+          <option value="all" data-i18n="filter_priority">Support Level</option>
+          <option value="priority" data-i18n="band_priority">Priority</option>
+          <option value="elevated" data-i18n="band_elevated">Elevated</option>
+          <option value="watch" data-i18n="band_watch">Watch</option>
+          <option value="stable" data-i18n="band_stable">Stable</option>
+        </select>
+        <select id="filter-status">
+          <option value="all" data-i18n="filter_status">Case Phase</option>
+          <option value="investigation" data-i18n="case_phase_investigation">Investigation</option>
+          <option value="trial" data-i18n="case_phase_trial">Trial</option>
+          <option value="rehabilitation" data-i18n="case_phase_rehabilitation">Rehabilitation</option>
+          <option value="compensation" data-i18n="case_phase_compensation">Compensation</option>
+        </select>
+        <select id="filter-area">
+          <option value="all" data-i18n="filter_area">District</option>
+        </select>
+        <select id="sort-by" style="margin-left:auto;">
+          <option value="priority" data-i18n="sort_highest">Highest Support Level</option>
+          <option value="recent" data-i18n="sort_recent">Most Recent</option>
+          <option value="followup" data-i18n="sort_followup">Most Open Alerts</option>
+        </select>
+      </div>
+
+      <div class="case-table">
+        <div class="case-row head">
+          <div data-i18n="case_ref">Victim Reference ID</div>
+          <div data-i18n="case_area">District</div>
+          <div data-i18n="priority_score_label">Support Score</div>
+          <div data-i18n="status_title_short">Support Level</div>
+          <div data-i18n="case_last_checkin">Last Check-in</div>
+          <div data-i18n="trend_label">Trend</div>
+          <div data-i18n="case_action">Action</div>
+        </div>
+        <div id="case-rows"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Case detail slide-over -->
+<div class="case-detail-panel" id="case-detail-panel">
+  <div class="case-detail-card">
+    <div class="cd-head">
+      <div>
+        <div class="font-head" style="font-size:20px;" id="cd-ref">PT-000</div>
+        <div class="muted" style="color:var(--text-muted);font-size:13px;" id="cd-area">—</div>
+      </div>
+      <button class="cd-close" id="cd-close" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="cd-alert" id="cd-alert" data-i18n="cd_alert_text">This case has open alerts requiring review.</div>
+
+    <div class="priority-row" style="margin-bottom:20px;">
+      <div class="priority-ring">
+        <svg width="96" height="96" viewBox="0 0 96 96">
+          <circle cx="48" cy="48" r="42" fill="none" stroke="var(--border)" stroke-width="8"/>
+          <circle id="cd-ring" cx="48" cy="48" r="42" fill="none" stroke="var(--urgent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="90"/>
+        </svg>
+        <div class="num"><b id="cd-score">—</b><small>/100</small></div>
+      </div>
+      <div>
+        <span class="status-pill urgent" id="cd-priority-pill"><span class="dot"></span><span id="cd-priority-label">Elevated</span></span>
+      </div>
+    </div>
+
+    <div class="stat-grid" style="margin-top:0;">
+      <div class="stat-box"><div class="label" data-i18n="case_detail_district_state">District / State</div><div class="val" id="cd-district-state">—</div></div>
+      <div class="stat-box"><div class="label" data-i18n="case_detail_followup_status">Case Phase</div><div class="val" id="cd-followup">—</div></div>
+    </div>
+
+    <div class="card" style="padding:16px 18px;margin-top:16px;">
+      <h2 style="font-size:14.5px;" data-i18n="case_detail_distress_trend">Distress Score Trend</h2>
+      <svg id="cd-trend-svg" width="100%" height="70" viewBox="0 0 280 70" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-box"><div class="label" data-i18n="case_detail_last_interaction">Last Interaction</div><div class="val" id="cd-last-interaction">—</div></div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <h2 style="font-size:14.5px;margin:0 0 8px;" data-i18n="case_detail_alerts">Alerts</h2>
+      <div id="cd-alerts-list"></div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <h2 style="font-size:14.5px;margin:0 0 4px;" data-i18n="case_detail_recent_checkins">Recent Check-ins</h2>
+      <div class="cd-hist" id="cd-history"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= i18n ================= */
+  var translations = {
+    en: {
+      nav_about:"About", nav_how:"How It Works", nav_support:"Support",
+      privacy_indicator:"Privacy & Security",
+      eyebrow:"A confidential support platform",
+      hero_headline_line1:"Support when you need it.",
+      hero_headline_line2:"Help when it matters.",
+      hero_sub:"Saathi listens, checks in regularly, and quietly connects you with the right support when it matters most — at your own pace, in your own words.",
+      cta_primary:"Get Started", cta_secondary:"Learn How It Works",
+      how_title:"A simple, steady rhythm of support",
+      how_sub:"No forms to fill out under pressure. Just a calm space that checks in and listens.",
+      how1_h:"Check in, in your own words", how1_p:"Talk or type — Saathi asks gentle, simple questions about how you're doing.",
+      how2_h:"Saathi listens quietly", how2_p:"Your responses help build a picture of your well-being over time, privately.",
+      how3_h:"Support reaches you sooner", how3_p:"If you may need attention, the right officer is notified so help can reach you faster.",
+      trust1_h:"Confidential by design", trust1_p:"You control what is shared, and when.",
+      trust2_h:"Available anytime", trust2_p:"Check in whenever suits you, day or night.",
+      trust3_h:"Backed by real officers", trust3_p:"A trained human is always behind the response.",
+      trust4_h:"Built with care", trust4_p:"Designed for people in vulnerable moments.",
+      footer_text:"Saathi — a Government of India support initiative. If this is an emergency, please contact local authorities directly.",
+      back:"Back",
+      login_title:"Continue to Saathi", login_sub:"Choose how you'd like to sign in",
+      login_beneficiary:"Beneficiary", login_officer:"Government Officer",
+      label_ref_id:"Victim Reference ID", label_pin:"Security PIN / OTP",
+      label_officer_id:"Officer ID", label_password:"Password / OTP",
+      btn_continue:"Continue", demo_note:"Demo access — no real credentials required",
+      anon_entry_link:"Continue without an ID →",
+      consent_title:"Before we begin",
+      consent_subtitle_identified:"Just a couple of quick permissions before we start.",
+      consent_subtitle_anonymous:"You can talk to Saathi without sharing who you are.",
+      consent_monitoring_title:"Support check-in monitoring",
+      consent_monitoring_desc:"Lets Saathi track your check-ins over time so the support team can notice if you need extra help.",
+      consent_safety_title:"Safety-support detection",
+      consent_safety_desc:"Lets Saathi notice language that suggests you may be in crisis, so it can offer helpline numbers.",
+      consent_required_label:"Required",
+      consent_anon_note:"You won't be asked for your name or any identifying details. Saathi will use a random ID for this session only.",
+      consent_continue:"Continue",
+      anon_mode_label:"Anonymous session",
+      end_session_label:"End Session",
+      nav_checkin:"Check-in", nav_status:"My Status", nav_privacy:"Privacy Mode", nav_signout:"Sign Out",
+      beneficiary_greeting:"How are you feeling today?",
+      beneficiary_sub:"Take your time. Saathi is here to listen, whenever you're ready.",
+      privacy_on:"Private mode is on.", privacy_note:"Information from this session will not be retained.",
+      orb_idle_caption:"Saathi is ready whenever you are.",
+      orb_listening_caption:"Listening...", orb_processing_caption:"Thinking...", orb_speaking_caption:"Saathi is responding...",
+      chat_placeholder:"Tell Saathi how you're feeling...",
+      mic_label:"Speak to Saathi", mic_label_stop:"Stop listening", send_label:"Send",
+      status_title:"Current Well-being Status", status_note:"A support/monitoring indicator based on your recent check-ins — not a diagnosis.",
+      status_stable:"Stable", status_attention:"Needs Attention", status_followup:"Requires Follow-up", status_urgent:"Urgent",
+      recent_checkin_label:"Recent Check-in", trend_label:"Trend", trend_improving:"Improving",
+      priority_score_label:"Support Score", priority_note:"This score is only one input the support team uses — it never decides anything on its own.",
+      band_stable:"Stable", band_watch:"Watch", band_elevated:"Elevated", band_priority:"Priority",
+      support_status_title:"Your support status",
+      support_status_note:"Based on your recent check-ins. This is a support indicator, not a diagnosis.",
+      support_msg_stable:"You're doing okay. Keep checking in whenever it feels right.",
+      support_msg_watch:"Things may be a little harder lately. Saathi will keep checking in gently.",
+      support_msg_elevated:"Additional support may be helpful right now — someone from the team may reach out for a gentle check-in.",
+      support_msg_priority:"The support team has been made aware and may reach out soon. You don't have to face this alone.",
+      view_details:"View details", hide_details:"Hide details",
+      support_title:"Support & Resources", support_sub:"If you need to speak with someone directly, these are always available — any time, in confidence.",
+      support_helpline1_label:"Tele-MANAS (mental health support)", support_helpline1_val:"14416 or 1-800-891-4416",
+      support_helpline2_label:"Emergency", support_helpline2_val:"112",
+      support_officer:"Your Assigned Officer",
+      private_mode_label:"Private Mode", private_mode_on_label:"Private Mode ON",
+      privacy_popover_text:"Private Mode pauses conversation-retention consent for this session — this conversation won't be saved. Your other privacy settings stay as you've set them, and you can turn it off any time.",
+      privacy_on_short:"Private mode is on — this conversation won't be saved.",
+      officer_assigned_area:"Assigned Area", officer_last_updated:"Last Updated", officer_system_status:"System Status", status_operational:"Operational",
+      officer_title:"Case Monitoring", officer_subtitle:"Sorted to show who may need attention first.",
+      search_placeholder:"Search by ID or district",
+      summary_attention:"Cases Flagged", summary_high:"Elevated", summary_critical:"Priority", summary_followup:"Open Alerts",
+      filter_priority:"Support Level", filter_status:"Case Phase", filter_area:"District",
+      case_phase_investigation:"Investigation", case_phase_trial:"Trial", case_phase_rehabilitation:"Rehabilitation", case_phase_compensation:"Compensation",
+      sort_highest:"Highest Support Level", sort_recent:"Most Recent", sort_followup:"Most Open Alerts",
+      case_ref:"Victim Reference ID", case_area:"District", status_title_short:"Support Level",
+      case_last_checkin:"Last Check-in", case_action:"Action",
+      case_view:"View", back_to_cases:"Back to Cases",
+      case_detail_distress_trend:"Distress Score Trend", case_detail_last_interaction:"Last Interaction",
+      case_detail_followup_status:"Case Phase", case_detail_recent_checkins:"Recent Check-ins",
+      case_detail_district_state:"District / State", case_detail_alerts:"Alerts",
+      cd_alert_text:"This case has open alerts requiring review.",
+      no_open_alerts:"No open alerts for this case.",
+      alert_band_crossing:"Support level changed", alert_sharp_delta:"Sharp score increase",
+      alert_sustained_decline:"Sustained decline", alert_disengagement_pattern:"Disengagement pattern",
+      alert_reported_threat:"Threat reported",
+      severity_low:"Low", severity_medium:"Medium", severity_high:"High", severity_critical:"Critical",
+      status_open:"Open", status_acknowledged:"Acknowledged", status_resolved:"Resolved",
+      assigned_counsellor:"Counsellor", assigned_district_officer:"District Officer",
+      btn_agree:"Agree", btn_disagree:"Disagree", reason_placeholder:"Reason (required for Disagree)",
+      btn_submit_decision:"Submit", reason_required_error:"A reason is required to disagree.",
+      decision_recorded:"Recorded", assigned_to_label:"Assigned to",
+      officer_role_label:"District Officer",
+      safety_reply:"It sounds like things feel really heavy right now. You don't have to face this alone. Tele-MANAS is free and confidential: 14416 or 1-800-891-4416. In an emergency, call 112. If it's alright with you, this may be shared with a counsellor for follow-up.",
+      identity_prompt_text:"Would you like a counsellor to be able to follow up with you directly? Sharing is completely optional — you can stay anonymous.",
+      identity_share_btn:"Share contact details", identity_stay_anon_btn:"Stay anonymous",
+      identity_form_placeholder:"Name or phone number", identity_confirm_btn:"Confirm",
+      identity_thanks_msg:"Thank you — this will help a counsellor reach you. You can still turn on Private Mode at any time."
+    },
+    hi: {
+      nav_about:"के बारे में", nav_how:"यह कैसे काम करता है", nav_support:"सहायता",
+      privacy_indicator:"गोपनीयता और सुरक्षा",
+      eyebrow:"एक गोपनीय सहायता मंच",
+      hero_headline_line1:"जब आपको ज़रूरत हो, सहायता।",
+      hero_headline_line2:"जब मायने रखे, मदद।",
+      hero_sub:"साथी आपकी बात सुनता है, नियमित हाल-चाल पूछता है, और ज़रूरत पड़ने पर आपको सही मदद से चुपचाप जोड़ता है — आपकी अपनी गति और अपने शब्दों में।",
+      cta_primary:"शुरू करें", cta_secondary:"यह कैसे काम करता है जानें",
+      how_title:"सहायता की एक सरल, स्थिर लय",
+      how_sub:"दबाव में फॉर्म भरने की ज़रूरत नहीं। बस एक शांत स्थान जो हाल-चाल पूछता और सुनता है।",
+      how1_h:"अपने शब्दों में हाल-चाल बताएं", how1_p:"बोलें या टाइप करें — साथी आपकी स्थिति के बारे में सरल सवाल पूछता है।",
+      how2_h:"साथी शांति से सुनता है", how2_p:"आपके जवाब समय के साथ आपकी भलाई की एक निजी तस्वीर बनाने में मदद करते हैं।",
+      how3_h:"मदद जल्दी पहुँचती है", how3_p:"यदि ध्यान देने की आवश्यकता हो, तो संबंधित अधिकारी को सूचित किया जाता है।",
+      trust1_h:"गोपनीयता पहले से ही सुनिश्चित", trust1_p:"आप तय करते हैं कि क्या और कब साझा हो।",
+      trust2_h:"हमेशा उपलब्ध", trust2_p:"जब भी सुविधाजनक हो, दिन हो या रात, हाल-चाल बताएं।",
+      trust3_h:"असली अधिकारियों का समर्थन", trust3_p:"हर प्रतिक्रिया के पीछे एक प्रशिक्षित व्यक्ति होता है।",
+      trust4_h:"सावधानी से बनाया गया", trust4_p:"संवेदनशील क्षणों में लोगों के लिए डिज़ाइन किया गया।",
+      footer_text:"साथी — भारत सरकार की एक सहायता पहल। यदि यह एक आपातकाल है, तो कृपया सीधे स्थानीय अधिकारियों से संपर्क करें।",
+      back:"वापस",
+      login_title:"साथी पर जारी रखें", login_sub:"साइन इन करने का तरीका चुनें",
+      login_beneficiary:"लाभार्थी", login_officer:"सरकारी अधिकारी",
+      label_ref_id:"पीड़ित संदर्भ आईडी", label_pin:"सुरक्षा पिन / ओटीपी",
+      label_officer_id:"अधिकारी आईडी", label_password:"पासवर्ड / ओटीपी",
+      btn_continue:"जारी रखें", demo_note:"डेमो पहुंच — वास्तविक क्रेडेंशियल आवश्यक नहीं",
+      anon_entry_link:"बिना आईडी के जारी रखें →",
+      consent_title:"शुरू करने से पहले",
+      consent_subtitle_identified:"शुरू करने से पहले बस कुछ अनुमतियां।",
+      consent_subtitle_anonymous:"आप अपनी पहचान बताए बिना साथी से बात कर सकते हैं।",
+      consent_monitoring_title:"सहायता हाल-चाल निगरानी",
+      consent_monitoring_desc:"यह साथी को समय के साथ आपके हाल-चाल को ट्रैक करने देता है ताकि सहायता टीम को पता चल सके कि आपको अतिरिक्त मदद चाहिए।",
+      consent_safety_title:"सुरक्षा-सहायता पहचान",
+      consent_safety_desc:"यह साथी को ऐसी भाषा पहचानने देता है जो संकट का संकेत देती है, ताकि वह हेल्पलाइन नंबर दे सके।",
+      consent_required_label:"आवश्यक",
+      consent_anon_note:"आपसे आपका नाम या कोई पहचान संबंधी जानकारी नहीं मांगी जाएगी। साथी केवल इस सत्र के लिए एक रैंडम आईडी का उपयोग करेगा।",
+      consent_continue:"जारी रखें",
+      anon_mode_label:"अनाम सत्र",
+      end_session_label:"सत्र समाप्त करें",
+      nav_checkin:"हाल-चाल", nav_status:"मेरी स्थिति", nav_privacy:"निजी मोड", nav_signout:"साइन आउट",
+      beneficiary_greeting:"आज आप कैसा महसूस कर रहे हैं?",
+      beneficiary_sub:"एक पल लीजिए। जब भी आप तैयार हों, साथी सुनने के लिए यहाँ है।",
+      privacy_on:"निजी मोड चालू है।", privacy_note:"इस सत्र की जानकारी सुरक्षित नहीं रखी जाएगी।",
+      orb_idle_caption:"साथी जब भी आप तैयार हों, तैयार है।",
+      orb_listening_caption:"सुन रहा है...", orb_processing_caption:"सोच रहा है...", orb_speaking_caption:"साथी जवाब दे रहा है...",
+      chat_placeholder:"साथी को बताएं कि आप कैसा महसूस कर रहे हैं...",
+      mic_label:"साथी से बोलें", mic_label_stop:"सुनना बंद करें", send_label:"भेजें",
+      status_title:"वर्तमान भलाई स्थिति", status_note:"आपके हालिया हाल-चाल पर आधारित एक सहायता संकेतक — निदान नहीं।",
+      status_stable:"स्थिर", status_attention:"ध्यान देने की आवश्यकता", status_followup:"अनुवर्ती आवश्यक", status_urgent:"तत्काल",
+      recent_checkin_label:"हालिया हाल-चाल", trend_label:"रुझान", trend_improving:"सुधार हो रहा है",
+      priority_score_label:"सहायता स्कोर", priority_note:"यह स्कोर सहायता टीम के लिए केवल एक संकेत है — यह अकेले कोई निर्णय नहीं लेता।",
+      band_stable:"स्थिर", band_watch:"निगरानी", band_elevated:"बढ़ा हुआ", band_priority:"प्राथमिकता",
+      support_status_title:"आपकी सहायता स्थिति",
+      support_status_note:"आपके हालिया हाल-चाल पर आधारित। यह एक सहायता संकेतक है, निदान नहीं।",
+      support_msg_stable:"आप ठीक कर रहे हैं। जब भी सही लगे, हाल-चाल बताते रहें।",
+      support_msg_watch:"हाल ही में चीज़ें थोड़ी कठिन हो सकती हैं। साथी धीरे-धीरे हाल-चाल पूछता रहेगा।",
+      support_msg_elevated:"अभी अतिरिक्त सहायता मददगार हो सकती है — टीम का कोई सदस्य हल्के हाल-चाल के लिए संपर्क कर सकता है।",
+      support_msg_priority:"सहायता टीम को सूचित कर दिया गया है और वे जल्द ही संपर्क कर सकते हैं। आपको अकेले इसका सामना नहीं करना है।",
+      view_details:"विवरण देखें", hide_details:"विवरण छुपाएं",
+      support_title:"सहायता और संसाधन", support_sub:"यदि आपको सीधे किसी से बात करने की आवश्यकता है, तो ये हमेशा, गोपनीय रूप से उपलब्ध हैं।",
+      support_helpline1_label:"टेली-मानस (मानसिक स्वास्थ्य सहायता)", support_helpline1_val:"14416 या 1-800-891-4416",
+      support_helpline2_label:"आपातकाल", support_helpline2_val:"112",
+      support_officer:"आपके नियुक्त अधिकारी",
+      private_mode_label:"निजी मोड", private_mode_on_label:"निजी मोड चालू",
+      privacy_popover_text:"निजी मोड इस सत्र के लिए बातचीत-संग्रहण सहमति को रोक देता है — यह बातचीत सुरक्षित नहीं रखी जाएगी। आपकी अन्य गोपनीयता सेटिंग्स वैसी ही रहती हैं, और आप इसे कभी भी बंद कर सकते हैं।",
+      privacy_on_short:"निजी मोड चालू है — यह बातचीत सुरक्षित नहीं रखी जाएगी।",
+      officer_assigned_area:"नियत क्षेत्र", officer_last_updated:"अंतिम अपडेट", officer_system_status:"सिस्टम स्थिति", status_operational:"चालू",
+      officer_title:"मामला निगरानी", officer_subtitle:"ध्यान देने योग्य मामलों को पहले दिखाने के लिए क्रमबद्ध।",
+      search_placeholder:"आईडी या ज़िले से खोजें",
+      summary_attention:"चिह्नित मामले", summary_high:"बढ़ा हुआ", summary_critical:"प्राथमिकता", summary_followup:"खुली चेतावनियां",
+      filter_priority:"सहायता स्तर", filter_status:"मामले का चरण", filter_area:"ज़िला",
+      case_phase_investigation:"जांच", case_phase_trial:"मुकदमा", case_phase_rehabilitation:"पुनर्वास", case_phase_compensation:"मुआवज़ा",
+      sort_highest:"उच्चतम सहायता स्तर", sort_recent:"सबसे हालिया", sort_followup:"सबसे अधिक खुली चेतावनियां",
+      case_ref:"पीड़ित संदर्भ आईडी", case_area:"ज़िला", status_title_short:"सहायता स्तर",
+      case_last_checkin:"अंतिम हाल-चाल", case_action:"कार्रवाई",
+      case_view:"देखें", back_to_cases:"मामलों पर वापस जाएं",
+      case_detail_distress_trend:"व्याकुलता स्कोर रुझान", case_detail_last_interaction:"अंतिम बातचीत",
+      case_detail_followup_status:"मामले का चरण", case_detail_recent_checkins:"हालिया हाल-चाल",
+      case_detail_district_state:"ज़िला / राज्य", case_detail_alerts:"चेतावनियां",
+      cd_alert_text:"इस मामले में समीक्षा हेतु खुली चेतावनियां हैं।",
+      no_open_alerts:"इस मामले के लिए कोई खुली चेतावनी नहीं है।",
+      alert_band_crossing:"सहायता स्तर बदला", alert_sharp_delta:"स्कोर में तेज़ वृद्धि",
+      alert_sustained_decline:"लगातार गिरावट", alert_disengagement_pattern:"जुड़ाव में कमी",
+      alert_reported_threat:"धमकी की सूचना",
+      severity_low:"कम", severity_medium:"मध्यम", severity_high:"उच्च", severity_critical:"गंभीर",
+      status_open:"खुला", status_acknowledged:"स्वीकृत", status_resolved:"सुलझाया गया",
+      assigned_counsellor:"काउंसलर", assigned_district_officer:"ज़िला अधिकारी",
+      btn_agree:"सहमत", btn_disagree:"असहमत", reason_placeholder:"कारण (असहमत के लिए आवश्यक)",
+      btn_submit_decision:"सबमिट करें", reason_required_error:"असहमत होने के लिए एक कारण आवश्यक है।",
+      decision_recorded:"दर्ज किया गया", assigned_to_label:"को सौंपा गया",
+      officer_role_label:"ज़िला अधिकारी",
+      safety_reply:"ऐसा लगता है कि अभी चीज़ें बहुत भारी महसूस हो रही हैं। आपको यह अकेले नहीं झेलना है। टेली-मानस निःशुल्क और गोपनीय है: 14416 या 1-800-891-4416। आपातकाल में 112 पर कॉल करें। यदि आप सहमत हों, तो इसे अनुवर्ती कार्रवाई के लिए एक काउंसलर के साथ साझा किया जा सकता है।",
+      identity_prompt_text:"क्या आप चाहेंगे कि कोई काउंसलर सीधे आपसे संपर्क कर सके? साझा करना पूरी तरह से वैकल्पिक है — आप अनाम भी रह सकते हैं।",
+      identity_share_btn:"संपर्क विवरण साझा करें", identity_stay_anon_btn:"अनाम रहें",
+      identity_form_placeholder:"नाम या फ़ोन नंबर", identity_confirm_btn:"पुष्टि करें",
+      identity_thanks_msg:"धन्यवाद — इससे एक काउंसलर आप तक पहुंच सकेगा। आप अभी भी कभी भी निजी मोड चालू कर सकते हैं।"
+    }
+  };
+
+  var currentLang = "en";
+  function applyTranslations(){
+    document.body.setAttribute("data-lang", currentLang);
+    var dict = translations[currentLang];
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var key = el.getAttribute("data-i18n");
+      if(dict[key]) el.textContent = dict[key];
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function(el){
+      var key = el.getAttribute("data-i18n-placeholder");
+      if(dict[key]) el.setAttribute("placeholder", dict[key]);
+    });
+    document.querySelectorAll("[data-lang-btn]").forEach(function(btn){
+      btn.classList.toggle("is-active", btn.getAttribute("data-lang-btn") === currentLang);
+    });
+    var micBtn = document.getElementById("btn-mic");
+    var sendBtn = document.getElementById("btn-send");
+    if(micBtn) micBtn.setAttribute("aria-label", t(micBtn.classList.contains("is-listening") ? "mic_label_stop" : "mic_label"));
+    if(sendBtn) sendBtn.setAttribute("aria-label", t("send_label"));
+    if(typeof updatePrivateUI === "function") updatePrivateUI();
+    var benSignoutLabel = document.getElementById("ben-signout-label");
+    if(benSignoutLabel && typeof isAnonymousMode !== "undefined" && isAnonymousMode){
+      benSignoutLabel.textContent = t("end_session_label");
+    }
+    var dToggle = document.getElementById("ben-details-toggle");
+    if(dToggle) dToggle.textContent = t(dToggle.getAttribute("aria-expanded") === "true" ? "hide_details" : "view_details");
+    renderCaseRows();
+    if(typeof cdPanel !== "undefined" && cdPanel && cdPanel.classList.contains("is-open") && currentOpenCase){
+      openCase(currentOpenCase);
+    }
+  }
+  document.querySelectorAll("[data-lang-btn]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      currentLang = btn.getAttribute("data-lang-btn");
+      applyTranslations();
+    });
+  });
+  function t(key){ return translations[currentLang][key] || key; }
+
+  /* ================= Screen routing ================= */
+  function showScreen(id){
+    document.querySelectorAll(".screen").forEach(function(s){ s.classList.remove("is-active"); });
+    document.getElementById(id).classList.add("is-active");
+    window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
+  }
+
+  document.getElementById("btn-get-started").addEventListener("click", function(){ showScreen("screen-login"); });
+  document.getElementById("btn-how-it-works").addEventListener("click", function(){
+    document.getElementById("how").scrollIntoView({behavior:"smooth"});
+  });
+  document.getElementById("login-back").addEventListener("click", function(e){ e.preventDefault(); showScreen("screen-landing"); });
+
+  /* ================= Login ================= */
+  var roleBtns = document.querySelectorAll("[data-role-btn]");
+  roleBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      roleBtns.forEach(function(b){ b.classList.remove("is-active"); });
+      btn.classList.add("is-active");
+      var role = btn.getAttribute("data-role-btn");
+      document.getElementById("form-beneficiary").style.display = role === "beneficiary" ? "block" : "none";
+      document.getElementById("form-officer").style.display = role === "officer" ? "block" : "none";
+    });
+  });
+
+  /* ================= Consent =================
+     Mirrors AnonymousSupportManager.start_or_resume_session(): anonymous mode
+     hard-requires BOTH monitoring_consent and safety_analysis_consent. The
+     identified flow only hard-requires case-support monitoring consent —
+     safety analysis is an optional, togglable consent there, matching
+     submit_case_score()'s ConsentManager.require() calls in business_logic.py. */
+  var pendingLoginMode = "identified";
+  var isAnonymousMode = false;
+  var anonymousIdentityLinked = false;
+  var safetyAnalysisEnabled = true;
+
+  function generateAnonymousId(){
+    var bytes = new Uint8Array(6);
+    if(window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(bytes);
+    else for(var i=0;i<6;i++) bytes[i] = Math.floor(Math.random()*256);
+    var hex = "";
+    for(var i=0;i<bytes.length;i++){ hex += bytes[i].toString(16).padStart(2,"0"); }
+    return "ANON-" + hex.toUpperCase();
+  }
+
+  function openConsentScreen(mode){
+    pendingLoginMode = mode;
+    var subtitle = document.getElementById("consent-subtitle");
+    var safetySwitch = document.getElementById("consent-safety-switch");
+    var safetyRequiredPill = document.getElementById("consent-safety-required-pill");
+    var anonNote = document.getElementById("consent-anon-note");
+    if(mode === "anonymous"){
+      subtitle.setAttribute("data-i18n", "consent_subtitle_anonymous");
+      safetySwitch.hidden = true;
+      safetyRequiredPill.hidden = false;
+      anonNote.hidden = false;
+    } else {
+      subtitle.setAttribute("data-i18n", "consent_subtitle_identified");
+      safetySwitch.hidden = false;
+      safetyRequiredPill.hidden = true;
+      anonNote.hidden = true;
+    }
+    subtitle.textContent = t(subtitle.getAttribute("data-i18n"));
+    showScreen("screen-consent");
+  }
+
+  document.getElementById("btn-anon-entry").addEventListener("click", function(){ openConsentScreen("anonymous"); });
+  document.getElementById("consent-back").addEventListener("click", function(e){ e.preventDefault(); showScreen("screen-login"); });
+
+  document.getElementById("btn-login-beneficiary").addEventListener("click", function(){ openConsentScreen("identified"); });
+
+  document.getElementById("btn-consent-continue").addEventListener("click", function(){
+    var benSignoutLabel = document.getElementById("ben-signout-label");
+    if(pendingLoginMode === "anonymous"){
+      CURRENT_PERSON_ID = generateAnonymousId();
+      isAnonymousMode = true;
+      anonymousIdentityLinked = false;
+      safetyAnalysisEnabled = true;
+      var badge = document.getElementById("anon-id-badge");
+      badge.textContent = CURRENT_PERSON_ID;
+      badge.hidden = false;
+      if(benSignoutLabel) benSignoutLabel.textContent = t("end_session_label");
+    } else {
+      var refId = (document.getElementById("input-ref-id").value || "").trim();
+      CURRENT_PERSON_ID = refId || "PT-DEMO-001";
+      isAnonymousMode = false;
+      safetyAnalysisEnabled = document.getElementById("consent-safety-toggle").checked;
+      document.getElementById("anon-id-badge").hidden = true;
+      if(benSignoutLabel) benSignoutLabel.textContent = t("nav_signout");
+    }
+    showScreen("screen-beneficiary");
+    setBenView("checkin");
+  });
+
+  document.getElementById("btn-login-officer").addEventListener("click", function(){
+    showScreen("screen-officer");
+    document.getElementById("officer-last-updated").textContent = new Date().toLocaleTimeString(currentLang === "hi" ? "hi-IN" : "en-IN", {hour:"2-digit", minute:"2-digit"});
+  });
+
+  document.getElementById("btn-signout-beneficiary").addEventListener("click", function(){
+    if(isAnonymousMode){
+      // Mirrors end_session(): don't retain device/session material once the
+      // person ends an anonymous session.
+      document.getElementById("chat-log").innerHTML = "";
+      document.getElementById("identity-prompt").hidden = true;
+      CURRENT_PERSON_ID = null;
+      isAnonymousMode = false;
+      anonymousIdentityLinked = false;
+      document.getElementById("anon-id-badge").hidden = true;
+    }
+    showScreen("screen-landing");
+  });
+  document.getElementById("btn-signout-officer").addEventListener("click", function(){ showScreen("screen-landing"); });
+
+  /* ================= Identity disclosure (anonymous mode only) =================
+     Mirrors PriorityDecision.show_identity_disclosure_form + link_identity():
+     always optional, always requires explicit confirmation with a value. */
+  var identityPrompt = document.getElementById("identity-prompt");
+  var identityForm = document.getElementById("identity-prompt-form");
+  document.getElementById("btn-identity-share").addEventListener("click", function(){
+    identityForm.hidden = false;
+    document.getElementById("identity-contact-input").focus();
+  });
+  document.getElementById("btn-identity-decline").addEventListener("click", function(){
+    identityPrompt.hidden = true;
+  });
+  document.getElementById("btn-identity-confirm").addEventListener("click", function(){
+    var input = document.getElementById("identity-contact-input");
+    var value = input.value.trim();
+    if(!value) return;
+    anonymousIdentityLinked = true;
+    identityPrompt.hidden = true;
+    input.value = "";
+    addBubble(t("identity_thanks_msg"), "saathi");
+  });
+
+  /* ================= Beneficiary secondary nav (off-canvas drawer) ================= */
+  var benNavBtns = document.querySelectorAll("[data-ben-view]");
+  var benDrawer = document.getElementById("ben-drawer");
+  var benDrawerOverlay = document.getElementById("ben-drawer-overlay");
+  var benMenuBtn = document.getElementById("ben-menu-btn");
+
+  function setBenView(view){
+    benNavBtns.forEach(function(b){ b.classList.toggle("is-active", b.getAttribute("data-ben-view") === view); });
+    document.querySelectorAll(".sub-view").forEach(function(v){ v.classList.remove("is-active"); });
+    document.getElementById("ben-view-" + view).classList.add("is-active");
+    closeDrawer();
+  }
+  function openDrawer(){
+    benDrawer.classList.add("is-open");
+    benDrawerOverlay.classList.add("is-open");
+    benMenuBtn.setAttribute("aria-expanded", "true");
+  }
+  function closeDrawer(){
+    benDrawer.classList.remove("is-open");
+    benDrawerOverlay.classList.remove("is-open");
+    benMenuBtn.setAttribute("aria-expanded", "false");
+  }
+  benNavBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){ setBenView(btn.getAttribute("data-ben-view")); });
+  });
+  benMenuBtn.addEventListener("click", function(){
+    benDrawer.classList.contains("is-open") ? closeDrawer() : openDrawer();
+  });
+  benDrawerOverlay.addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape") closeDrawer();
+  });
+
+  /* ================= Private Mode — one click, always visible ================= */
+  var privateBtn = document.getElementById("private-mode-btn");
+  var privatePopover = document.getElementById("private-popover");
+  var privateNote = document.getElementById("private-note");
+  var privateModeOn = false;
+  var privatePopoverShown = false;
+
+  function updatePrivateUI(){
+    privateBtn.classList.toggle("is-on", privateModeOn);
+    privateBtn.setAttribute("aria-pressed", String(privateModeOn));
+    document.getElementById("private-mode-label").textContent = t(privateModeOn ? "private_mode_on_label" : "private_mode_label");
+    privateNote.hidden = !privateModeOn;
+  }
+  privateBtn.addEventListener("click", function(){
+    privateModeOn = !privateModeOn;
+    updatePrivateUI();
+    if(privateModeOn && !privatePopoverShown){
+      privatePopover.classList.add("is-visible");
+      privatePopoverShown = true;
+    } else {
+      privatePopover.classList.remove("is-visible");
+    }
+  });
+  document.getElementById("private-popover-close").addEventListener("click", function(){
+    privatePopover.classList.remove("is-visible");
+  });
+
+  /* ================= "View details" progressive disclosure for status ================= */
+  var detailsToggle = document.getElementById("ben-details-toggle");
+  var detailsPanel = document.getElementById("ben-details-panel");
+  detailsToggle.addEventListener("click", function(){
+    var expanded = detailsToggle.getAttribute("aria-expanded") === "true";
+    detailsToggle.setAttribute("aria-expanded", String(!expanded));
+    detailsPanel.hidden = expanded;
+    detailsToggle.textContent = t(expanded ? "view_details" : "hide_details");
+  });
+
+  /* ================= Orb + chat (simulated) ================= */
+  var orb = document.getElementById("chat-orb");
+  var orbCaption = document.getElementById("orb-caption");
+  var chatLog = document.getElementById("chat-log");
+  var chatInput = document.getElementById("chat-input");
+  var btnSend = document.getElementById("btn-send");
+  var btnMic = document.getElementById("btn-mic");
+
+  function setOrbState(state, captionKey){
+    orb.className = "orb state-" + state;
+    orbCaption.textContent = captionKey ? t(captionKey) : "";
+  }
+
+  chatInput.addEventListener("input", function(){
+    btnSend.disabled = chatInput.value.trim().length === 0;
+  });
+  chatInput.addEventListener("keydown", function(e){
+    if(e.key === "Enter" && !btnSend.disabled) sendMessage();
+  });
+  btnSend.addEventListener("click", sendMessage);
+
+  // Mirrors the four-part structure the real system prompt in
+  // conversational_ai.py requires: validate the feeling in one sentence, ask
+  // exactly one gentle open-ended question, mention a resource only if it
+  // fits naturally, close gently — and never diagnose, promise outcomes, or
+  // sound clinical (the earlier "recorded" / "noting this down" wording broke
+  // that rule).
+  var mockReplies = {
+    en: [
+      "That sounds like a lot to carry right now. What's been the hardest part of today for you? Take whatever time you need to answer.",
+      "I can hear that this hasn't been easy. Would you like to tell me a little more about what's going on? I'm not going anywhere.",
+      "Thank you for trusting me with that. Is there something specific that's been on your mind? A counsellor at Tele-MANAS is always available too, if that ever feels right. Either way, I'm glad you checked in today.",
+      "That sounds difficult to sit with. Would talking it through a little more help right now? Take your time — there's no pressure to say more than feels right."
+    ],
+    hi: [
+      "अभी यह सब संभालना वाकई भारी लग रहा होगा। आज का सबसे कठिन हिस्सा क्या रहा? जवाब देने के लिए जितना समय चाहिए, लीजिए।",
+      "यह सुनकर लगता है कि यह आसान नहीं रहा। क्या आप थोड़ा और बताना चाहेंगे कि क्या हो रहा है? मैं यहीं हूं।",
+      "मुझ पर भरोसा करने के लिए धन्यवाद। क्या कुछ खास है जो आपके मन में है? टेली-मानस पर एक काउंसलर भी हमेशा उपलब्ध है, अगर कभी ज़रूरत महसूस हो। बहरहाल, आज आपने हाल-चाल बताया, इसकी सराहना है।",
+      "यह सब झेलना मुश्किल लग रहा होगा। क्या इसके बारे में थोड़ा और बात करना मददगार होगा? जितना कहना सही लगे, उतना ही कहिए — कोई दबाव नहीं है।"
+    ]
+  };
+
+  // The real bot detects the language of what was actually typed
+  // (detect_language() in conversational_ai.py checks for Devanagari script)
+  // and replies in that language, regardless of the UI toggle.
+  function detectTypedLanguage(text){
+    for(var i=0;i<text.length;i++){
+      var code = text.charCodeAt(i);
+      if(code >= 0x0900 && code <= 0x097F) return "hi";
+    }
+    return "en";
+  }
+
+  /* ================= Mock service layer =================
+     Mirrors the real Checkin API contract exactly:
+
+       POST /checkins  { person_id, text, channel }  -> CheckinRequest
+       200            { person_id, score, band, components }  -> CheckinResponse
+
+     To connect the real backend, replace only the body of
+     SaathiAPI.submitCheckin with a fetch() call — the calling code
+     (sendMessage / the mic flow below) already speaks this exact shape,
+     so nothing else needs to change. */
+  var CURRENT_PERSON_ID = "PT-DEMO-001";
+  var CHECKIN_CHANNELS = ["chat", "voice", "sms"];
+  // Same six components and weights as CASE_WEIGHTS in business_logic.py,
+  // just snake_case to match ScoreComponents.
+  var SCORE_WEIGHTS = { emotion:0.25, voice_stress:0.15, engagement:0.20, case_events:0.20, reported_stressors:0.10, trajectory:0.10 };
+
+  function clampScore(v){ return Math.round(Math.max(0, Math.min(100, v)) * 100) / 100; }
+
+  var SaathiAPI = {
+    /** @param {{person_id:string, text:string, channel?:'chat'|'voice'|'sms'}} request
+     *  @returns {Promise<{person_id:string, score:number, band:string, components:object}>} */
+    submitCheckin: function(request){
+      return new Promise(function(resolve, reject){
+        if(!request || !request.person_id || !request.text){
+          reject({ error: "person_id and text are required" });
+          return;
+        }
+        var channel = request.channel || "chat";
+        if(CHECKIN_CHANNELS.indexOf(channel) === -1){
+          reject({ error: "channel must be one of: " + CHECKIN_CHANNELS.join(", ") });
+          return;
+        }
+        // Simulated network latency. A real backend derives these components
+        // from NLP emotion analysis, the voice-stress pipeline, engagement
+        // baselines, verified case events, and score history — never from
+        // the client — so this generation is demo-only.
+        setTimeout(function(){
+          var components = {
+            emotion: clampScore(30 + Math.random() * 45),
+            voice_stress: channel === "voice" ? clampScore(30 + Math.random() * 45) : clampScore(15 + Math.random() * 20),
+            engagement: clampScore(20 + Math.random() * 40),
+            case_events: clampScore(10 + Math.random() * 40),
+            reported_stressors: clampScore(10 + Math.random() * 35),
+            trajectory: clampScore(10 + Math.random() * 35)
+          };
+          var score = clampScore(Object.keys(SCORE_WEIGHTS).reduce(function(sum, key){
+            return sum + components[key] * SCORE_WEIGHTS[key];
+          }, 0));
+          resolve({
+            person_id: request.person_id,
+            score: score,
+            band: bandFromScore(score),
+            components: components
+          });
+        }, 550);
+      });
+    }
+  };
+
+  // Reflects a fresh CheckinResponse in the beneficiary's own status view.
+  function updateBeneficiaryStatus(score, band){
+    var pillLabel = document.getElementById("ben-status-label");
+    var pill = document.getElementById("ben-status-pill");
+    var msg = document.getElementById("ben-support-msg");
+    var ring = document.getElementById("ben-score-ring");
+    var num = document.getElementById("ben-score-num");
+    var lastCheckin = document.getElementById("ben-last-checkin");
+    if(!pillLabel) return;
+
+    pillLabel.textContent = t("band_" + band);
+    pill.className = "status-pill " + bandPillClass(band);
+    msg.setAttribute("data-i18n", "support_msg_" + band);
+    msg.textContent = t("support_msg_" + band);
+    ring.setAttribute("stroke-dashoffset", Math.round(239 * (1 - score / 100)));
+    ring.setAttribute("stroke", bandColor(band));
+    num.textContent = Math.round(score);
+    if(lastCheckin) lastCheckin.textContent = currentLang === "hi" ? "अभी-अभी" : "Just now";
+  }
+
+  function addBubble(text, from, isSafety){
+    var div = document.createElement("div");
+    div.className = "chat-bubble from-" + from + (isSafety ? " safety" : "");
+    div.textContent = text;
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  /* Lightweight, client-side echo of the conversation safety-support signal in
+     business_logic.py (assess_conversation_safety). The real, context-aware
+     scoring (negation, quotation, immediacy, specificity) runs server-side —
+     this only checks for a self-referential, non-negated risk phrase so the
+     frontend can surface real crisis resources immediately, the same way the
+     backend's helpline_info does. It never diagnoses and never claims to
+     auto-notify anyone, matching build_routing_plan()'s human-led design. */
+  var RISK_PATTERNS = {
+    en: [
+      /kill myself/i, /end my life/i, /take my life/i, /want to die/i, /don'?t want to live/i,
+      /no reason to live/i, /self[- ]?harm/i, /hurt myself/i, /cut myself/i,
+      /being abused/i, /he hits me/i, /she hits me/i, /in danger/i, /not safe here/i,
+      /going to kill me/i,
+      // Romanized Hindi, since people often type Hinglish regardless of UI language
+      /khud ko nuksan/i, /marna chahta/i, /marna chahti/i, /jaan se marne/i
+    ],
+    hi: [/आत्महत्या/, /खुद को नुकसान/, /खुद को चोट/, /जीना नहीं चाहता/, /जीने का मन नहीं/, /मर जाना चाहता/, /मार डालेगा/, /मार डालेगी/, /सुरक्षित नहीं हूं/, /मुझे पीटता/, /मुझे पीटती/]
+  };
+  var NEGATION_WORDS = {
+    en: /\b(not|no|never|don't|do not|would not|will not)\b/i,
+    hi: /\b(नहीं|मत)\b/
+  };
+  function detectSafetySignal(text){
+    var patterns = RISK_PATTERNS[currentLang] || RISK_PATTERNS.en;
+    for(var i=0;i<patterns.length;i++){
+      var match = patterns[i].exec(text);
+      if(!match) continue;
+      var before = text.slice(0, match.index);
+      var negated = NEGATION_WORDS[currentLang].test(before.slice(-24));
+      if(!negated) return true;
+    }
+    return false;
+  }
+  function tLang(key, lang){
+    return (translations[lang] && translations[lang][key]) || translations.en[key] || key;
+  }
+
+  function sendMessage(){
+    var val = chatInput.value.trim();
+    if(!val) return;
+    addBubble(val, "user");
+    chatInput.value = "";
+    btnSend.disabled = true;
+    setOrbState("processing", "orb_processing_caption");
+
+    var replyLang = detectTypedLanguage(val);
+
+    // Consent-gated, same as calculate_case_support_score()'s
+    // safety_analysis_enabled parameter: if the person declined safety
+    // analysis at consent, this check simply doesn't run.
+    if(safetyAnalysisEnabled && detectSafetySignal(val)){
+      setTimeout(function(){
+        setOrbState("speaking", "orb_speaking_caption");
+        addBubble(tLang("safety_reply", replyLang), "saathi", true);
+        if(isAnonymousMode && !anonymousIdentityLinked){
+          document.getElementById("identity-prompt-form").hidden = true;
+          document.getElementById("identity-prompt").hidden = false;
+        }
+        setTimeout(function(){ setOrbState("idle", "orb_idle_caption"); }, 1600);
+      }, 900);
+      return;
+    }
+
+    SaathiAPI.submitCheckin({ person_id: CURRENT_PERSON_ID, text: val, channel: "chat" })
+      .then(function(response){
+        setOrbState("speaking", "orb_speaking_caption");
+        var pool = mockReplies[replyLang];
+        var reply = pool[Math.floor(Math.random() * pool.length)];
+        addBubble(reply, "saathi");
+        updateBeneficiaryStatus(response.score, response.band);
+        setTimeout(function(){ setOrbState("idle", "orb_idle_caption"); }, 1400);
+      })
+      .catch(function(){
+        setOrbState("idle", "orb_idle_caption");
+      });
+  }
+
+  var micHint = document.getElementById("mic-hint");
+  var micActive = false;
+  var micTimers = [];
+  function clearMicTimers(){ micTimers.forEach(clearTimeout); micTimers = []; }
+
+  function stopListening(cancelled){
+    clearMicTimers();
+    micActive = false;
+    btnMic.classList.remove("is-listening");
+    btnMic.setAttribute("aria-label", t("mic_label"));
+    micHint.textContent = "";
+    if(cancelled){
+      setOrbState("idle", "orb_idle_caption");
+    }
+  }
+
+  btnMic.addEventListener("click", function(){
+    if(micActive){ stopListening(true); return; }
+    micActive = true;
+    btnMic.classList.add("is-listening");
+    btnMic.setAttribute("aria-label", t("mic_label_stop"));
+    setOrbState("listening", "orb_listening_caption");
+    micHint.textContent = currentLang === "hi" ? "फिर से टैप करके रोकें" : "Tap again to stop";
+
+    micTimers.push(setTimeout(function(){
+      if(!micActive) return;
+      micActive = false;
+      btnMic.classList.remove("is-listening");
+      btnMic.setAttribute("aria-label", t("mic_label"));
+      micHint.textContent = "";
+      setOrbState("processing", "orb_processing_caption");
+      micTimers.push(setTimeout(function(){
+        // No real speech-to-text in this demo, so a placeholder stands in for
+        // the transcript — swap for the real recognized text once wired up.
+        SaathiAPI.submitCheckin({ person_id: CURRENT_PERSON_ID, text: "(voice check-in)", channel: "voice" })
+          .then(function(response){
+            setOrbState("speaking", "orb_speaking_caption");
+            var pool = mockReplies[currentLang];
+            addBubble(pool[Math.floor(Math.random() * pool.length)], "saathi");
+            updateBeneficiaryStatus(response.score, response.band);
+            micTimers.push(setTimeout(function(){ setOrbState("idle", "orb_idle_caption"); }, 1400));
+          })
+          .catch(function(){ setOrbState("idle", "orb_idle_caption"); });
+      }, 1000));
+    }, 2200));
+  });
+
+  /* ================= Mock case data (anonymised, for demo only) =================
+     Bands, alert types, severities, and assignment rules mirror business_logic.py
+     (BAND_THRESHOLDS, evaluate_alerts, _alert_severity, _assigned_role) so this
+     UI reflects the real classification contract rather than an invented scale. */
+  var DISTRICTS = [
+    {name:"District North", state:"Rajasthan"},
+    {name:"District East", state:"Rajasthan"},
+    {name:"District South", state:"Madhya Pradesh"},
+    {name:"District West", state:"Madhya Pradesh"}
+  ];
+  var CASE_PHASES = ["investigation", "trial", "rehabilitation", "compensation"];
+  var BAND_ORDER = ["stable", "watch", "elevated", "priority"];
+  var BAND_RANK = {stable:0, watch:1, elevated:2, priority:3};
+
+  function seededTrend(base){
+    var arr = []; var v = base;
+    for(var i=0;i<5;i++){ v = Math.max(5, Math.min(97, v + (Math.round(Math.random()*20)-10))); arr.push(v); }
+    return arr;
+  }
+  // Mirrors BAND_THRESHOLDS (stable_max 29.99 / watch_max 49.99 / elevated_max 74.99).
+  function bandFromScore(score){
+    if(score > 74.99) return "priority";
+    if(score > 49.99) return "elevated";
+    if(score > 29.99) return "watch";
+    return "stable";
+  }
+  function escalateBand(band, steps){
+    var idx = Math.min(BAND_ORDER.length - 1, BAND_ORDER.indexOf(band) + steps);
+    return BAND_ORDER[idx];
+  }
+  function alertSeverity(type, band){
+    if(type === "reported_threat" || band === "priority") return "critical";
+    if(band === "elevated" || type === "sharp_delta" || type === "sustained_decline") return "high";
+    if(type === "disengagement_pattern") return "medium";
+    return "low";
+  }
+  function alertAssignee(type, band){
+    if(type === "reported_threat" || type === "sharp_delta") return "district_officer";
+    if(type === "band_crossing" && band === "priority") return "district_officer";
+    return "counsellor";
+  }
+  function openAlertCount(c){ return c.alerts.filter(function(a){ return a.status === "open"; }).length; }
+
+  var cases = [];
+  (function buildCases(){
+    var seeds = [
+      {score:92, threat:true, sharpDelta:true},
+      {score:81, sustainedDecline:true},
+      {score:76, disengagement:true},
+      {score:68},
+      {score:58, sustainedDecline:true},
+      {score:47},
+      {score:39, disengagement:true},
+      {score:28},
+      {score:19},
+      {score:72, threat:true},
+      {score:88, sharpDelta:true},
+      {score:55}
+    ];
+    seeds.forEach(function(seed, i){
+      var district = DISTRICTS[i % DISTRICTS.length];
+      var trend = seededTrend(seed.score);
+      trend[trend.length - 1] = seed.score;
+      if(seed.sharpDelta) trend[trend.length - 2] = Math.max(5, seed.score - 24);
+
+      var band = bandFromScore(seed.score);
+      // A reported threat or repeated disengagement can push the band up even
+      // when the raw score alone would not — classify_band() never scores in isolation.
+      if(seed.threat) band = escalateBand(band, 2);
+      else if(seed.sustainedDecline || seed.disengagement) band = escalateBand(band, 1);
+
+      var alerts = [];
+      function addAlert(type, reasonEn, reasonHi){
+        alerts.push({
+          id: "ALT-" + (101 + i) + "-" + (alerts.length + 1),
+          type: type,
+          severity: alertSeverity(type, band),
+          assignedTo: alertAssignee(type, band),
+          status: "open",
+          reasonEn: reasonEn, reasonHi: reasonHi,
+          officerDecision: null, officerReason: null
+        });
+      }
+      if(band === "elevated" || band === "priority"){
+        addAlert("band_crossing",
+          "Case entered the " + band + " support level.",
+          "मामला \u201c" + band + "\u201d सहायता स्तर में प्रवेश कर गया।");
+      }
+      if(seed.sharpDelta) addAlert("sharp_delta", "Score rose sharply in one check-in cycle.", "एक हाल-चाल चक्र में स्कोर तेज़ी से बढ़ा।");
+      if(seed.sustainedDecline) addAlert("sustained_decline", "Decline has continued for 2 or more cycles.", "गिरावट 2 या अधिक चक्रों से जारी है।");
+      if(seed.disengagement) addAlert("disengagement_pattern", "Check-ins have been missed or shortened for 2+ cycles.", "2 या अधिक चक्रों से हाल-चाल छूट रहे हैं या छोटे हो गए हैं।");
+      if(seed.threat) addAlert("reported_threat", "A threat was reported; human review is required.", "एक धमकी की सूचना मिली; मानव समीक्षा आवश्यक है।");
+
+      cases.push({
+        id: "PT-" + String(101 + i).padStart(3, "0"),
+        district: district.name,
+        state: district.state,
+        casePhase: CASE_PHASES[i % CASE_PHASES.length],
+        score: seed.score,
+        band: band,
+        daysAgo: (i % 6) + 1,
+        trend: trend,
+        alerts: alerts
+      });
+    });
+  })();
+
+  var areaSelect = document.getElementById("filter-area");
+  DISTRICTS.forEach(function(d){
+    var opt = document.createElement("option");
+    opt.value = d.name; opt.textContent = d.name;
+    areaSelect.appendChild(opt);
+  });
+
+  function bandColor(band){
+    return band === "priority" ? "var(--critical)" : band === "elevated" ? "var(--urgent)" : band === "watch" ? "var(--attention)" : "var(--stable)";
+  }
+  function bandPillClass(band){
+    return band === "priority" ? "critical" : band === "elevated" ? "urgent" : band === "watch" ? "attention" : "stable";
+  }
+
+  function renderSummary(list){
+    document.getElementById("sum-total").textContent = list.filter(function(c){ return c.band !== "stable"; }).length;
+    document.getElementById("sum-elevated").textContent = list.filter(function(c){ return c.band === "elevated"; }).length;
+    document.getElementById("sum-priority").textContent = list.filter(function(c){ return c.band === "priority"; }).length;
+    document.getElementById("sum-alerts").textContent = list.reduce(function(sum, c){ return sum + openAlertCount(c); }, 0);
+  }
+
+  function filteredSortedCases(){
+    var pr = document.getElementById("filter-priority").value;
+    var st = document.getElementById("filter-status").value;
+    var ar = document.getElementById("filter-area").value;
+    var sortBy = document.getElementById("sort-by").value;
+    var q = (document.getElementById("case-search").value || "").trim().toLowerCase();
+    var list = cases.filter(function(c){
+      var matchesQuery = !q || c.id.toLowerCase().indexOf(q) !== -1 || c.district.toLowerCase().indexOf(q) !== -1;
+      return matchesQuery && (pr === "all" || c.band === pr) && (st === "all" || c.casePhase === st) && (ar === "all" || c.district === ar);
+    });
+    if(sortBy === "priority") list.sort(function(a,b){ return BAND_RANK[b.band] - BAND_RANK[a.band] || b.score - a.score; });
+    else if(sortBy === "recent") list.sort(function(a,b){ return a.daysAgo - b.daysAgo; });
+    else if(sortBy === "followup") list.sort(function(a,b){ return openAlertCount(b) - openAlertCount(a); });
+    return list;
+  }
+
+  function miniTrend(trend){
+    var wrap = document.createElement("div");
+    wrap.className = "trend-mini";
+    trend.forEach(function(v){
+      var bar = document.createElement("span");
+      bar.style.height = (8 + (v/100)*22) + "px";
+      wrap.appendChild(bar);
+    });
+    return wrap;
+  }
+
+  function renderCaseRows(){
+    var list = filteredSortedCases();
+    renderSummary(cases);
+    var container = document.getElementById("case-rows");
+    container.innerHTML = "";
+    list.forEach(function(c){
+      var row = document.createElement("div");
+      row.className = "case-row";
+      row.setAttribute("role","button");
+      row.tabIndex = 0;
+
+      var d1 = document.createElement("div"); d1.className="case-ref"; d1.textContent = c.id; d1.setAttribute("data-label", t("case_ref"));
+      var d2 = document.createElement("div"); d2.textContent = c.district; d2.setAttribute("data-label", t("case_area"));
+      var d3 = document.createElement("div"); d3.setAttribute("data-label", t("priority_score_label"));
+      d3.innerHTML = '<b style="color:'+bandColor(c.band)+'">' + c.score + '</b> <span style="color:var(--text-faint);font-size:11.5px;">/100</span>';
+      var d4 = document.createElement("div"); d4.setAttribute("data-label", t("status_title_short"));
+      var pill = document.createElement("span");
+      pill.className = "status-pill " + bandPillClass(c.band);
+      pill.innerHTML = '<span class="dot"></span>' + t("band_" + c.band);
+      d4.appendChild(pill);
+      var openCount = openAlertCount(c);
+      if(openCount > 0){
+        var badge = document.createElement("span");
+        badge.className = "alert-badge";
+        badge.textContent = openCount;
+        badge.title = t("case_detail_alerts");
+        d4.appendChild(badge);
+      }
+      var d5 = document.createElement("div"); d5.setAttribute("data-label", t("case_last_checkin"));
+      d5.textContent = c.daysAgo === 1 ? (currentLang === "hi" ? "1 दिन पहले" : "1 day ago") : (c.daysAgo + (currentLang === "hi" ? " दिन पहले" : " days ago"));
+      var d6 = document.createElement("div"); d6.setAttribute("data-label", t("trend_label"));
+      d6.appendChild(miniTrend(c.trend));
+      var d7 = document.createElement("div"); d7.setAttribute("data-label", t("case_action"));
+      var viewBtn = document.createElement("button");
+      viewBtn.className = "btn btn-secondary btn-sm";
+      viewBtn.textContent = t("case_view");
+      viewBtn.addEventListener("click", function(e){ e.stopPropagation(); openCase(c); });
+      d7.appendChild(viewBtn);
+
+      [d1,d2,d3,d4,d5,d6,d7].forEach(function(d){ row.appendChild(d); });
+      row.addEventListener("click", function(){ openCase(c); });
+      row.addEventListener("keydown", function(e){ if(e.key === "Enter") openCase(c); });
+      container.appendChild(row);
+    });
+  }
+  ["filter-priority","filter-status","filter-area","sort-by"].forEach(function(id){
+    document.getElementById(id).addEventListener("change", renderCaseRows);
+  });
+  document.getElementById("case-search").addEventListener("input", renderCaseRows);
+
+  /* ================= Case detail panel + Alerts (Agree/Disagree acknowledge, per acknowledge_alert()/record_feedback() in business_logic.py) ================= */
+  var cdPanel = document.getElementById("case-detail-panel");
+  var currentOpenCase = null;
+  document.getElementById("cd-close").addEventListener("click", function(){ cdPanel.classList.remove("is-open"); });
+  cdPanel.addEventListener("click", function(e){ if(e.target === cdPanel) cdPanel.classList.remove("is-open"); });
+
+  function renderAlerts(c){
+    var wrap = document.getElementById("cd-alerts-list");
+    wrap.innerHTML = "";
+    if(!c.alerts.length){
+      var empty = document.createElement("p");
+      empty.className = "muted";
+      empty.style.margin = "0";
+      empty.textContent = t("no_open_alerts");
+      wrap.appendChild(empty);
+      return;
+    }
+    c.alerts.forEach(function(alert){
+      var item = document.createElement("div");
+      item.className = "alert-item";
+
+      var head = document.createElement("div");
+      head.className = "alert-item-head";
+      var title = document.createElement("span");
+      title.className = "alert-item-title";
+      title.textContent = t("alert_" + alert.type);
+      var sev = document.createElement("span");
+      sev.className = "severity-chip " + alert.severity;
+      sev.textContent = t("severity_" + alert.severity);
+      head.appendChild(title); head.appendChild(sev);
+      item.appendChild(head);
+
+      var meta = document.createElement("div");
+      meta.className = "alert-item-meta";
+      meta.textContent = (currentLang === "hi" ? alert.reasonHi : alert.reasonEn) + " · " + t("assigned_to_label") + ": " + t("assigned_" + alert.assignedTo);
+      item.appendChild(meta);
+
+      if(alert.status === "open"){
+        var row = document.createElement("div");
+        row.className = "alert-decision-row";
+        var agreeBtn = document.createElement("button");
+        agreeBtn.className = "btn btn-secondary btn-sm";
+        agreeBtn.textContent = t("btn_agree");
+        var disagreeBtn = document.createElement("button");
+        disagreeBtn.className = "btn btn-ghost btn-sm";
+        disagreeBtn.textContent = t("btn_disagree");
+        row.appendChild(agreeBtn); row.appendChild(disagreeBtn);
+        item.appendChild(row);
+
+        var reasonBox = document.createElement("div");
+        reasonBox.className = "alert-reason-box";
+        var textarea = document.createElement("textarea");
+        textarea.placeholder = t("reason_placeholder");
+        var errorEl = document.createElement("div");
+        errorEl.className = "alert-reason-error";
+        errorEl.textContent = t("reason_required_error");
+        var submitBtn = document.createElement("button");
+        submitBtn.className = "btn btn-primary btn-sm";
+        submitBtn.style.marginTop = "8px";
+        submitBtn.textContent = t("btn_submit_decision");
+        reasonBox.appendChild(textarea);
+        reasonBox.appendChild(errorEl);
+        reasonBox.appendChild(submitBtn);
+        item.appendChild(reasonBox);
+
+        agreeBtn.addEventListener("click", function(){ decideAlert(c, alert, "agree", ""); });
+        disagreeBtn.addEventListener("click", function(){ reasonBox.classList.add("is-visible"); textarea.focus(); });
+        submitBtn.addEventListener("click", function(){
+          var reason = textarea.value.trim();
+          if(!reason){ errorEl.classList.add("is-visible"); return; }
+          errorEl.classList.remove("is-visible");
+          decideAlert(c, alert, "disagree", reason);
+        });
+      } else {
+        var decided = document.createElement("div");
+        decided.className = "alert-decided";
+        decided.textContent = t("decision_recorded") + ": " + t("btn_" + alert.officerDecision) + (alert.officerReason ? " — " + alert.officerReason : "");
+        item.appendChild(decided);
+      }
+
+      wrap.appendChild(item);
+    });
+  }
+
+  // Mirrors BusinessLogicEngine.acknowledge(): record_feedback() requires a
+  // reason for Disagree, then persist_acknowledge_alert() marks it acknowledged.
+  function decideAlert(c, alert, decision, reason){
+    alert.status = "acknowledged";
+    alert.officerDecision = decision;
+    alert.officerReason = reason;
+    renderAlerts(c);
+    renderCaseRows();
+    document.getElementById("cd-alert").classList.toggle("is-visible", openAlertCount(c) > 0);
+  }
+
+  function openCase(c){
+    currentOpenCase = c;
+    document.getElementById("cd-ref").textContent = c.id;
+    document.getElementById("cd-district-state").textContent = c.district + " · " + c.state;
+    document.getElementById("cd-score").textContent = c.score;
+    var circumference = 264;
+    document.getElementById("cd-ring").setAttribute("stroke-dashoffset", Math.round(circumference * (1 - c.score/100)));
+    document.getElementById("cd-ring").setAttribute("stroke", bandColor(c.band));
+    document.getElementById("cd-priority-label").textContent = t("band_" + c.band);
+    document.getElementById("cd-priority-pill").className = "status-pill " + bandPillClass(c.band);
+    document.getElementById("cd-last-interaction").textContent = c.daysAgo + (currentLang==="hi" ? " दिन पहले" : " days ago");
+    document.getElementById("cd-followup").textContent = t("case_phase_" + c.casePhase);
+
+    document.getElementById("cd-alert").classList.toggle("is-visible", openAlertCount(c) > 0);
+    renderAlerts(c);
+
+    // trend svg
+    var svg = document.getElementById("cd-trend-svg");
+    var pts = c.trend.map(function(v,i){
+      var x = (i/(c.trend.length-1)) * 260 + 10;
+      var y = 60 - (v/100)*50;
+      return x + "," + y;
+    }).join(" ");
+    svg.innerHTML = '<polyline points="'+pts+'" fill="none" stroke="'+bandColor(c.band)+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+      c.trend.map(function(v,i){
+        var x = (i/(c.trend.length-1)) * 260 + 10;
+        var y = 60 - (v/100)*50;
+        return '<circle cx="'+x+'" cy="'+y+'" r="3" fill="'+bandColor(c.band)+'"/>';
+      }).join("");
+
+    // history
+    var hist = document.getElementById("cd-history");
+    hist.innerHTML = "";
+    c.trend.slice().reverse().forEach(function(v,i){
+      var item = document.createElement("div");
+      item.className = "cd-hist-item";
+      var daysBack = (c.trend.length - i) * 2;
+      item.innerHTML = '<span class="d">' + (currentLang==="hi" ? daysBack+" दिन पहले" : daysBack+"d ago") + '</span><b style="color:'+bandColor(bandFromScore(v))+'">' + v + '/100</b>';
+      hist.appendChild(item);
+    });
+
+    cdPanel.classList.add("is-open");
+  }
+
+  /* ================= Init ================= */
+  applyTranslations();
+  renderCaseRows();
+})();
+</script>
+</body>
+</html>
