@@ -52,12 +52,23 @@ export async function request(
   const onAbort = () => controller.abort(signal?.reason);
   signal?.addEventListener("abort", onAbort, { once: true });
 
-  const init = { method, signal: controller.signal };
+  const init = {
+    method,
+    signal: controller.signal,
+    // ngrok's free tier intercepts requests that look like they came from a
+    // browser and serves its own HTML interstitial instead of proxying to the
+    // API. That page carries no CORS headers, so the browser blocks it and the
+    // failure surfaces as an unexplained "could not reach the server" — even
+    // though the tunnel is up and CORS is configured correctly. This header
+    // opts out of the interstitial. Harmless once the API is on a real host.
+    headers: { "ngrok-skip-browser-warning": "true" },
+  };
   if (body instanceof FormData) {
-    // Let the browser set multipart/form-data with its own boundary.
+    // Let the browser set multipart/form-data with its own boundary, so no
+    // Content-Type here.
     init.body = body;
   } else if (body !== undefined) {
-    init.headers = { "Content-Type": "application/json" };
+    init.headers["Content-Type"] = "application/json";
     init.body = JSON.stringify(body);
   }
 
