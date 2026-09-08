@@ -126,3 +126,11 @@ def read_person_history(person_id: str, accessed_by: str, db: Session = Depends(
             for a in history["alerts"]
         ],
     }
+
+
+@router.get("/people/support-contacts")
+def get_support_contacts(db: Session = Depends(get_db)):
+    """
+    Return empty list of support contacts for now.
+    """
+    return []
