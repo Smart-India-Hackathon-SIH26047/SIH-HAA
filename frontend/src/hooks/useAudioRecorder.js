@@ -32,8 +32,20 @@ export function useAudioRecorder({ onRecorded } = {}) {
   // Plain-language trace, surfaced in the UI. Recording fails in ways that
   // all look like "nothing happened" otherwise.
   const [lastEvent, setLastEvent] = useState(null);
+  // Live input level, 0..1. A microphone can open successfully and still
+  // deliver silence — wrong device, muted at the OS, or held by another app.
+  // Without this the failure is invisible until the server rejects the upload.
+  const [level, setLevel] = useState(0);
+  const [heardSound, setHeardSound] = useState(false);
+  const [metering, setMetering] = useState(false);
 
   const recorderRef = useRef(null);
+  const audioCtxRef = useRef(null);
+  const rafRef = useRef(null);
+  const peakRef = useRef(0);
+  // Whether the level meter is actually running. A broken meter must never be
+  // allowed to veto a recording.
+  const meteringOkRef = useRef(false);
   const chunksRef = useRef([]);
   const streamRef = useRef(null);
   const timerRef = useRef(null);
@@ -48,6 +60,11 @@ export function useAudioRecorder({ onRecorded } = {}) {
   const cleanup = useCallback(() => {
     clearInterval(timerRef.current);
     timerRef.current = null;
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = null;
+    audioCtxRef.current?.close().catch(() => {});
+    audioCtxRef.current = null;
+    setLevel(0);
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     recorderRef.current = null;
@@ -83,6 +100,56 @@ export function useAudioRecorder({ onRecorded } = {}) {
     streamRef.current = stream;
     recorderRef.current = recorder;
 
+    // Meter the input so silence is visible while it is happening.
+    peakRef.current = 0;
+    meteringOkRef.current = false;
+    setMetering(false);
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioCtx();
+      audioCtxRef.current = ctx;
+
+      // Chrome creates an AudioContext SUSPENDED unless it is constructed
+      // inside a user gesture, and the await on getUserMedia above has already
+      // spent ours. A suspended context feeds the analyser nothing: every
+      // sample sits at the 128 midpoint and RMS reads exactly 0, so the meter
+      // reports silence however loud the microphone actually is.
+      if (ctx.state === "suspended") {
+        try {
+          await ctx.resume();
+        } catch {
+          // Left suspended; handled by meteringOkRef below.
+        }
+      }
+
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 1024;
+      ctx.createMediaStreamSource(stream).connect(analyser);
+      const samples = new Uint8Array(analyser.fftSize);
+      meteringOkRef.current = ctx.state === "running";
+      setMetering(meteringOkRef.current);
+
+      const tick = () => {
+        analyser.getByteTimeDomainData(samples);
+        let sum = 0;
+        for (let i = 0; i < samples.length; i += 1) {
+          const v = (samples[i] - 128) / 128;
+          sum += v * v;
+        }
+        const rms = Math.sqrt(sum / samples.length);
+        peakRef.current = Math.max(peakRef.current, rms);
+        setLevel(rms);
+        // Comfortably above the noise floor of a working but quiet mic.
+        if (rms > 0.02) setHeardSound(true);
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {
+      // Metering is a diagnostic, never a reason to block recording.
+      meteringOkRef.current = false;
+      setMetering(false);
+    }
+
     recorder.ondataavailable = (event) => {
       if (event.data?.size) {
         chunksRef.current.push(event.data);
@@ -105,6 +172,18 @@ export function useAudioRecorder({ onRecorded } = {}) {
         setError("No audio was captured. Check the microphone is not muted.");
         return;
       }
+      // Only trust a silence verdict when the meter was genuinely running.
+      // Blocking an upload on a diagnostic that may itself have failed is how
+      // a working microphone gets reported as broken.
+      if (meteringOkRef.current && peakRef.current < 0.02) {
+        setLastEvent(`stopped: silent (peak ${peakRef.current.toFixed(3)})`);
+        setError(
+          "No sound reached the microphone. Check it isn't muted, and that the " +
+            "right input device is selected in your system settings and in the " +
+            "browser's address-bar microphone menu.",
+        );
+        return;
+      }
       if (blob.size < 1200) {
         setLastEvent(`stopped: only ${blob.size}B`);
         setError("That was too short to make out. Try holding the mic a little longer.");
@@ -119,7 +198,8 @@ export function useAudioRecorder({ onRecorded } = {}) {
     // never lost if the final flush on stop misbehaves.
     recorder.start(1000);
     setIsRecording(true);
-    setLastEvent("recording");
+    setHeardSound(false);
+    setLastEvent(meteringOkRef.current ? "recording" : "recording (meter off)");
     setSeconds(0);
     timerRef.current = setInterval(() => setSeconds((n) => n + 1), 1000);
   }, [isSupported, cleanup]);
@@ -149,5 +229,17 @@ export function useAudioRecorder({ onRecorded } = {}) {
     [cleanup],
   );
 
-  return { isSupported, isRecording, seconds, error, lastEvent, start, stop, toggle };
+  return {
+    isSupported,
+    isRecording,
+    seconds,
+    error,
+    lastEvent,
+    level,
+    heardSound,
+    metering,
+    start,
+    stop,
+    toggle,
+  };
 }

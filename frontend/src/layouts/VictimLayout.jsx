@@ -4,6 +4,7 @@ import { Activity, LifeBuoy, LogOut, Menu, Sparkles } from "lucide-react";
 import { BrandMark } from "@/components/Orb";
 import { useAuth } from "@/auth/AuthProvider";
 import { LanguageSwitch, useLang } from "@/i18n/LanguageProvider";
+import AnonymousToggle from "@/components/AnonymousToggle";
 
 const NAV = [
   { to: "/check-in", key: "navCheckin", icon: Sparkles, end: true },
@@ -43,7 +44,8 @@ export default function VictimLayout() {
           <BrandMark size={20} />
           {t("brand")}
         </span>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <AnonymousToggle compact />
           <LanguageSwitch compact />
         </div>
       </header>

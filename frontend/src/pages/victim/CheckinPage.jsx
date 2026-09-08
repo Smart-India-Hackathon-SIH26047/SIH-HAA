@@ -17,7 +17,7 @@ import { useLang } from "@/i18n/LanguageProvider";
  * speaking when a reply lands. Score and band are never shown here.
  */
 export default function CheckinPage() {
-  const { personId } = useAuth();
+  const { personId, anonymousMode } = useAuth();
   const { t, lang } = useLang();
   const conversation = useCheckinConversation({
     personId,
@@ -140,6 +140,11 @@ export default function CheckinPage() {
   return (
     <div className="flex flex-1 flex-col justify-between gap-5">
       <div className="pt-2 text-center">
+        {anonymousMode && (
+          <p className="mx-auto mb-3 w-fit rounded-full bg-accent-softer px-3.5 py-1.5 text-[12px] font-medium text-accent-strong">
+            {t("anonBannerCheckin")}
+          </p>
+        )}
         <h1 className="font-head text-[clamp(23px,3.4vw,30px)]">{t("checkinGreeting")}</h1>
         <p className="mt-2 text-[15px] text-muted">
           {t("checkinSub")}
@@ -256,6 +261,35 @@ export default function CheckinPage() {
           {mode !== "none" && micActive && (
             <span className="text-xs text-muted">
               {mode === "live" ? t("voiceTypesLive") : t("voiceSendsRecording")}
+            </span>
+          )}
+
+          {/* While recording, show the input level. A microphone that opens
+              but delivers silence is otherwise invisible until the upload is
+              rejected, which is far too late to be useful. */}
+          {mode === "record" && recorder.isRecording && recorder.metering && (
+            <span className="flex w-full items-center gap-2">
+              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-line">
+                <span
+                  className={[
+                    "block h-full rounded-full transition-[width] duration-75",
+                    recorder.heardSound ? "bg-accent" : "bg-band-watch",
+                  ].join(" ")}
+                  style={{ width: `${Math.min(100, Math.round(recorder.level * 320))}%` }}
+                />
+              </span>
+              <span
+                className={[
+                  "shrink-0 text-xs",
+                  recorder.heardSound ? "text-muted" : "text-band-elevated",
+                ].join(" ")}
+              >
+                {recorder.heardSound
+                  ? t("micHearing")
+                  : recorder.seconds >= 2
+                    ? t("micNoSound")
+                    : "…"}
+              </span>
             </span>
           )}
           {micError && <span className="text-xs text-band-elevated">{micError}</span>}

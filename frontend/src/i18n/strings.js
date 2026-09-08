@@ -93,6 +93,18 @@ export const STRINGS = {
     voiceOff: "Voice off",
     voiceUnsupported: "Voice isn't available in this browser — try Chrome, or type below.",
     voiceTapToRecord: "Tap the mic to record",
+    micNoSound: "No sound is reaching the microphone — check it isn't muted.",
+    micHearing: "Hearing you",
+    anonModeOn: "Anonymous",
+    anonModeOff: "Anonymous off",
+    anonWhatThisMeans: "what this means",
+    anonExplainTitle: "While anonymous is on",
+    anonExplainHidden:
+      "These check-ins go to a separate case code, so they don't appear in your own case and no officer reviewing it can see them.",
+    anonExplainStored:
+      "They are still saved and still scored — that's how support reaches anyone who needs it — just not linked to you.",
+    anonExplainNotRetro: "Earlier check-ins are unaffected. This applies from now on.",
+    anonBannerCheckin: "Anonymous — this conversation isn't linked to your case.",
     voiceSwitchedToRecording:
       "Live transcription isn't responding here, so Saathi will record instead — your words appear once you stop.",
     voiceTypesLive: "Your words appear as you speak",
@@ -229,6 +241,18 @@ export const STRINGS = {
     voiceOff: "आवाज़ बंद",
     voiceUnsupported: "इस ब्राउज़र में आवाज़ उपलब्ध नहीं है — Chrome आज़माएँ, या नीचे लिखें।",
     voiceTapToRecord: "रिकॉर्ड करने के लिए माइक दबाएँ",
+    micNoSound: "माइक तक कोई आवाज़ नहीं पहुँच रही — देखें कि वह म्यूट तो नहीं है।",
+    micHearing: "आवाज़ आ रही है",
+    anonModeOn: "अनाम",
+    anonModeOff: "अनाम बंद",
+    anonWhatThisMeans: "इसका क्या मतलब है",
+    anonExplainTitle: "जब अनाम मोड चालू है",
+    anonExplainHidden:
+      "ये बातचीत एक अलग केस कोड में जाती है, इसलिए यह आपके केस में नहीं दिखती और कोई अधिकारी इसे नहीं देख सकता।",
+    anonExplainStored:
+      "ये फिर भी सहेजी और आँकी जाती हैं — मदद इसी तरह पहुँचती है — बस आपसे जुड़ी नहीं होतीं।",
+    anonExplainNotRetro: "पहले की बातचीत पर कोई असर नहीं। यह अभी से लागू होता है।",
+    anonBannerCheckin: "अनाम — यह बातचीत आपके केस से जुड़ी नहीं है।",
     voiceSwitchedToRecording:
       "यहाँ लाइव लिखाई काम नहीं कर रही, इसलिए साथी रिकॉर्ड करेगा — रोकने पर आपके शब्द दिखेंगे।",
     voiceTypesLive: "बोलते ही आपके शब्द दिखेंगे",
