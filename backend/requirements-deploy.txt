@@ -1,0 +1,47 @@
+# Dependency set for deploying the FastAPI service to Linux (Railway).
+#
+# WHY THIS FILE EXISTS
+# backend/requirements.txt is a `pip freeze` of a Windows dev machine and
+# cannot install on Railway. Three separate problems:
+#
+#   1. It OMITS packages the code imports. app/ml_services.py imports torch,
+#      transformers, whisper and librosa; none of the four appear in it. A
+#      clean install would fail at import time.
+#   2. It PINS Windows-only packages with no Linux wheels — pywin32,
+#      pypiwin32, pywinpty, comtypes — so pip aborts before it gets going.
+#   3. It drags in tensorflow, keras, jupyterlab, notebook, streamlit,
+#      opencv-python, wandb, xgboost and ~40 google-cloud-* packages that the
+#      API never imports, which would balloon the image for no benefit.
+#
+# It also lists `jupter==0.1.0` and `php==1.2.1`, which look like typo-squat
+# packages rather than anything intentional. Worth removing from the dev
+# environment too.
+#
+# Versions below match what is installed and working on the dev machine.
+
+# CPU-only torch. The default PyPI wheel for Linux bundles CUDA and is ~2.5 GB;
+# this service does inference on CPU and never needs it.
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# --- web layer ---
+fastapi==0.123.10
+uvicorn[standard]==0.40.0
+python-multipart==0.0.22
+pydantic==2.12.5
+
+# --- database ---
+SQLAlchemy==2.0.46
+psycopg2-binary==2.9.12
+python-dotenv==1.2.1
+
+# --- chatbot (Gemini) ---
+google-genai==1.60.0
+
+# --- ML: text emotion, voice stress, speech-to-text ---
+# openai-whisper also needs the ffmpeg *binary* at runtime; nixpacks.toml
+# installs it. librosa pulls soundfile/numba/scipy/scikit-learn itself.
+torch==2.14.0+cpu
+transformers==4.57.6
+openai-whisper==20250625
+librosa==0.11.0
+numpy==2.4.1

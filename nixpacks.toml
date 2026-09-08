@@ -1,0 +1,20 @@
+# Railway build for the FastAPI backend.
+#
+# IMPORTANT: leave Railway's "Root Directory" at the repository root, NOT
+# backend/. The ML checkpoints live in <repo root>/models, and
+# app/ml_services.py resolves them relative to its own file (three parents up).
+# Pointing Railway at backend/ would leave models/ outside the build context
+# and the service would crash on import.
+
+providers = ["python"]
+
+[phases.setup]
+# ffmpeg is a runtime requirement of openai-whisper: it shells out to the
+# binary to decode uploaded audio. gcc is needed to build a few wheels.
+nixPkgs = ["python311", "ffmpeg", "gcc"]
+
+[phases.install]
+cmds = [
+  "python -m venv --copies /opt/venv",
+  ". /opt/venv/bin/activate && pip install --upgrade pip && pip install -r backend/requirements-deploy.txt",
+]
