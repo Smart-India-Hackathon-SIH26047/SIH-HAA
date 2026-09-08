@@ -4,7 +4,19 @@ import { useAuth, ROLES } from "./AuthProvider";
 import { LoadingState } from "@/components/ui/States";
 import SetupNoticePage from "@/pages/auth/SetupNoticePage";
 
-const homeFor = (role) => (role === ROLES.OFFICER ? "/officer" : "/check-in");
+/**
+ * Home route for a KNOWN role, or null when the role is unknown.
+ *
+ * It deliberately does not fall back to the victim home. "role is undefined"
+ * and "role is victim" are different states, and collapsing them is exactly
+ * what routed officers into the victim app while the profiles row was still
+ * in flight. Callers must handle null rather than guess a side of the app.
+ */
+export const homeFor = (role) => {
+  if (role === ROLES.OFFICER) return "/officer";
+  if (role === ROLES.VICTIM) return "/check-in";
+  return null;
+};
 
 /**
  * Gate for the signed-in areas.
@@ -14,12 +26,14 @@ const homeFor = (role) => (role === ROLES.OFFICER ? "/officer" : "/check-in");
  * reachable directly. In demo mode this gate is only a role switch.
  */
 export function RequireAuth() {
-  const { isAuthenticated, loading, role, requiresCredentials } = useAuth();
+  const { isAuthenticated, loading, roleResolved, role, requiresCredentials } = useAuth();
   const location = useLocation();
 
   // Only account mode needs Supabase configured.
   if (requiresCredentials && !isSupabaseConfigured) return <SetupNoticePage />;
-  if (loading) return <LoadingState label="Loading…" />;
+  // `loading` now covers the role lookup too, so reaching past this line
+  // means the role below is the real answer and not a not-yet-loaded null.
+  if (loading || !roleResolved) return <LoadingState label="Loading…" />;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
@@ -32,25 +46,32 @@ export function RequireAuth() {
 
 /** Gate for one role. Sends the other role to its own home. */
 export function RequireRole({ role: required }) {
-  const { role, loading, requiresCredentials } = useAuth();
+  const { role, loading, roleResolved, requiresCredentials } = useAuth();
 
-  if (loading) return <LoadingState label="Loading…" />;
+  // An unresolved role is NOT a role. Redirecting on it is what produced the
+  // wrong landing page; wait instead.
+  if (loading || !roleResolved) return <LoadingState label="Loading…" />;
   if (!role) return <Navigate to={requiresCredentials ? "/choose-role" : "/login"} replace />;
-  if (role !== required) return <Navigate to={homeFor(role)} replace />;
+  if (role === required) return <Outlet />;
 
-  return <Outlet />;
+  // A real, resolved, different role: send it home. A role we do not
+  // recognise goes back to the chooser rather than to a guessed default.
+  const home = homeFor(role);
+  if (!home) return <Navigate to={requiresCredentials ? "/choose-role" : "/login"} replace />;
+  return <Navigate to={home} replace />;
 }
 
 /** Keeps an already-signed-in user off the entry screen. */
 export function RedirectIfAuthenticated({ children }) {
-  const { isAuthenticated, role, loading, requiresCredentials } = useAuth();
+  const { isAuthenticated, role, loading, roleResolved, requiresCredentials } = useAuth();
 
   if (requiresCredentials && !isSupabaseConfigured) return <SetupNoticePage />;
-  if (loading) return <LoadingState label="Loading…" />;
+  if (loading || !roleResolved) return <LoadingState label="Loading…" />;
 
   if (isAuthenticated) {
-    if (!role) return <Navigate to="/choose-role" replace />;
-    return <Navigate to={homeFor(role)} replace />;
+    const home = homeFor(role);
+    if (!home) return <Navigate to="/choose-role" replace />;
+    return <Navigate to={home} replace />;
   }
   return children;
 }

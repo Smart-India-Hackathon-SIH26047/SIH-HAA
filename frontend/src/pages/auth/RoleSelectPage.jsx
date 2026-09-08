@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { ClipboardList, Heart, Loader2, LogOut } from "lucide-react";
 import { ROLES, useAuth } from "@/auth/AuthProvider";
+import { homeFor } from "@/auth/guards";
 import { LoadingState } from "@/components/ui/States";
 
 /**
@@ -10,23 +11,27 @@ import { LoadingState } from "@/components/ui/States";
  * be in distress, and this should not feel like filling in a form.
  */
 export default function RoleSelectPage() {
-  const { chooseRole, signOut, user, isAuthenticated, loading, role } = useAuth();
-  const navigate = useNavigate();
+  const { chooseRole, signOut, user, isAuthenticated, loading, roleResolved, role } = useAuth();
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState(null);
 
   // This route sits outside RequireAuth (which would bounce back here in a
   // loop), so it carries its own checks.
-  if (loading) return <LoadingState label="Loading…" />;
+  if (loading || !roleResolved) return <LoadingState label="Loading…" />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role) return <Navigate to={role === ROLES.OFFICER ? "/officer" : "/check-in"} replace />;
+  // Once a role is resolved this redirect fires on its own. Leaving is driven
+  // by the resolved role rather than by an imperative navigate() next to the
+  // state write, so there is no window where the two disagree.
+  const resolvedHome = homeFor(role);
+  if (resolvedHome) return <Navigate to={resolvedHome} replace />;
 
-  const pick = async (role) => {
-    setBusy(role);
+  const pick = async (chosen) => {
+    setBusy(chosen);
     setError(null);
     try {
-      await chooseRole(role);
-      navigate(role === ROLES.OFFICER ? "/officer" : "/check-in", { replace: true });
+      await chooseRole(chosen);
+      // No navigate() here: chooseRole sets the role, and the redirect above
+      // picks it up on the next render. Stays busy until that happens.
     } catch (err) {
       setError(err.message || "Could not save that choice.");
       setBusy(null);

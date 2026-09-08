@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, ClipboardList, Heart, Loader2 } from "lucide-react";
 import { ROLES, useAuth } from "@/auth/AuthProvider";
+import { homeFor } from "@/auth/guards";
 import { readableAuthError } from "@/lib/supabase";
 import { LanguageSwitch, useLang } from "@/i18n/LanguageProvider";
 
@@ -13,7 +14,17 @@ import { LanguageSwitch, useLang } from "@/i18n/LanguageProvider";
  * to require accounts (VITE_REQUIRE_LOGIN=true).
  */
 export default function LoginPage() {
-  const { signIn, signUp, chooseRole, requiresCredentials, continueAnonymously } = useAuth();
+  const {
+    signIn,
+    signUp,
+    chooseRole,
+    requiresCredentials,
+    continueAnonymously,
+    role: resolvedRole,
+    loading,
+    roleResolved,
+    isAuthenticated,
+  } = useAuth();
   const { t, lang } = useLang();
   const navigate = useNavigate();
 
@@ -24,13 +35,26 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
   const [offerSignUp, setOfferSignUp] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-  const go = (chosen) =>
-    navigate(chosen === ROLES.OFFICER ? "/officer" : "/check-in", { replace: true });
+  /**
+   * Leave only once the provider has RESOLVED a role.
+   *
+   * Navigating straight after chooseRole() raced the profiles lookup: the
+   * router could read a role that had not landed yet and fall through to the
+   * victim home, which is why signing in as an officer sometimes opened the
+   * victim app. Watching the resolved value means there is nothing to race —
+   * if the role is not known yet this simply does not fire.
+   */
+  useEffect(() => {
+    if (!submitted || loading || !roleResolved || !isAuthenticated) return;
+    const home = homeFor(resolvedRole);
+    if (home) navigate(home, { replace: true });
+  }, [submitted, loading, roleResolved, isAuthenticated, resolvedRole, navigate]);
 
   const finish = async (userId) => {
     await chooseRole(role, userId);
-    go(role);
+    setSubmitted(true);
   };
 
   /**
@@ -49,12 +73,15 @@ export default function LoginPage() {
     try {
       if (!requiresCredentials) {
         await chooseRole(role);
-        go(role);
+        setSubmitted(true);
         return;
       }
 
       const result = await signIn(email.trim(), password);
       await finish(result.userId);
+      // Deliberately stays busy on success: the redirect is driven by the
+      // effect above, and re-enabling the form first would let someone
+      // submit twice into the gap.
     } catch (err) {
       const message = String(err?.message || "");
       if (/invalid login credentials/i.test(message)) {
@@ -63,7 +90,6 @@ export default function LoginPage() {
       } else {
         setError(readableAuthError(err));
       }
-    } finally {
       setBusy(false);
     }
   };
@@ -74,10 +100,9 @@ export default function LoginPage() {
     setBusy(true);
     try {
       await continueAnonymously(lang);
-      navigate("/check-in", { replace: true });
+      setSubmitted(true);
     } catch (err) {
       setError(err?.message ? `${t("anonFailed")} (${err.message})` : t("anonFailed"));
-    } finally {
       setBusy(false);
     }
   };
@@ -94,12 +119,12 @@ export default function LoginPage() {
             "Turn it off in Supabase (Authentication → Providers → Email), then sign in.",
         );
         setOfferSignUp(false);
+        setBusy(false);
         return;
       }
       await finish(result.userId);
     } catch (err) {
       setError(readableAuthError(err));
-    } finally {
       setBusy(false);
     }
   };

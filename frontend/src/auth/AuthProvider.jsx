@@ -8,6 +8,7 @@ const AuthContext = createContext(null);
 export const ROLES = { VICTIM: "victim", OFFICER: "officer" };
 
 const STORAGE_KEY = "saathi.session";
+const ANON_MODE_KEY = "saathi.anonymousMode";
 
 /**
  * Session and role for the whole app, in one of two modes.
@@ -29,7 +30,21 @@ const STORAGE_KEY = "saathi.session";
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Two different questions, and collapsing them into one `loading` flag was
+  // the login race: knowing WHETHER someone is signed in tells you nothing
+  // about WHICH side of the app they belong to. The session resolves first;
+  // the role arrives later, from the `profiles` table. Routing must wait for
+  // both, or it decides a role while the answer is still in flight.
+  const [sessionResolved, setSessionResolved] = useState(false);
+  // Which user id the profiles lookup has actually answered for. Derived
+  // rather than a boolean flag: a flag set from inside an effect is always one
+  // render late, and that render is precisely when the router decides.
+  const [profileFetchedFor, setProfileFetchedFor] = useState(null);
+  // A signed-in person can route this conversation to an unlinked case code
+  // instead of their own record. Persisted, so it survives a reload.
+  const [anonymousMode, setAnonymousMode] = useState(false);
+  const [anonymousPersonId, setAnonymousPersonId] = useState(null);
+  const [switchingAnonymous, setSwitchingAnonymous] = useState(false);
 
   const useAccounts = REQUIRE_LOGIN && Boolean(supabase);
 
@@ -38,11 +53,31 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setProfile(JSON.parse(raw));
+      if (raw) {
+        const saved = JSON.parse(raw);
+        // In account mode the role is owned by the `profiles` table, never by
+        // localStorage. A leftover blob from a demo or anonymous session
+        // would otherwise seed a role before the real one lands — which is
+        // how an officer got routed into the victim app. The exception is an
+        // anonymous session: it has no Supabase user and no profiles row, so
+        // local storage is the only record of it.
+        if (!useAccounts || saved?.anonymous) setProfile(saved);
+      }
     } catch {
       // A blocked or corrupt store just means "not signed in".
     }
-    if (!useAccounts) setLoading(false);
+    try {
+      const raw = localStorage.getItem(ANON_MODE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        setAnonymousMode(Boolean(saved.on));
+        setAnonymousPersonId(saved.personId || null);
+      }
+    } catch {
+      // Not restorable; defaults to off, which is the safe direction.
+    }
+    // Demo mode has no remote lookup: whatever was just read IS the answer.
+    if (!useAccounts) setSessionResolved(true);
   }, [useAccounts]);
 
   // --- Account mode: Supabase session ------------------------------------
@@ -51,7 +86,7 @@ export function AuthProvider({ children }) {
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session ?? null);
-      setLoading(false);
+      setSessionResolved(true);
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
@@ -64,7 +99,8 @@ export function AuthProvider({ children }) {
   const userId = session?.user?.id ?? null;
 
   useEffect(() => {
-    // An anonymous session has no Supabase user and no profiles row.
+    // An anonymous session has no Supabase user and no profiles row, so the
+    // role it already carries is final.
     if (!useAccounts || !userId || profile?.anonymous) return undefined;
     let active = true;
 
@@ -74,7 +110,13 @@ export function AuthProvider({ children }) {
       .eq("id", userId)
       .maybeSingle()
       .then(({ data }) => {
-        if (active) setProfile(data ?? null);
+        if (!active) return;
+        // chooseRole() writes the same row. If its upsert already landed for
+        // this user, keep it: this SELECT may have been issued before that
+        // write committed, in which case `data` is null or stale and would
+        // silently undo the role the person just picked.
+        setProfile((prev) => (prev?.id === userId ? prev : data ?? null));
+        setProfileFetchedFor(userId);
       });
 
     return () => {
@@ -177,6 +219,70 @@ export function AuthProvider({ children }) {
     return row;
   }, []);
 
+  /**
+   * Route this conversation to an unlinked case, or back to the person's own.
+   *
+   * Being clear about the boundary: check-ins made while this is on are
+   * stored against a separate anonymous record, so they do not appear in the
+   * person's case history and no officer viewing that case can see them. They
+   * are still stored, still scored, and can still raise their own alert —
+   * noticing distress is the point of the service. It hides the link, not the
+   * conversation, and it is not retrospective.
+   */
+  const toggleAnonymousMode = useCallback(
+    async (language = "en") => {
+      if (anonymousMode) {
+        setAnonymousMode(false);
+        try {
+          localStorage.setItem(
+            ANON_MODE_KEY,
+            JSON.stringify({ on: false, personId: anonymousPersonId }),
+          );
+        } catch {
+          // Non-fatal.
+        }
+        return false;
+      }
+
+      setSwitchingAnonymous(true);
+      try {
+        // Reuse the same unlinked case across sessions, so switching back and
+        // forth does not scatter someone's history across many records.
+        let id = anonymousPersonId;
+        if (!id) {
+          const person = await createAnonymousPerson({ language });
+          id = person.id;
+          setAnonymousPersonId(id);
+        }
+        setAnonymousMode(true);
+        try {
+          localStorage.setItem(ANON_MODE_KEY, JSON.stringify({ on: true, personId: id }));
+        } catch {
+          // Non-fatal.
+        }
+        return true;
+      } finally {
+        setSwitchingAnonymous(false);
+      }
+    },
+    [anonymousMode, anonymousPersonId],
+  );
+
+  /**
+   * Is the ROLE known yet? Signed out, there is nothing to look up. Signed in,
+   * it is known once the profiles lookup has answered for THIS user — or once
+   * chooseRole has written a row for them, which answers the same question.
+   */
+  const roleResolved = !useAccounts
+    ? sessionResolved
+    : !userId
+      ? sessionResolved
+      : profileFetchedFor === userId || profile?.id === userId || Boolean(profile?.anonymous);
+
+  // Still loading until the session AND the role are both settled. The role
+  // half is what the router was missing.
+  const loading = !(sessionResolved && roleResolved);
+
   const value = useMemo(() => {
     const role = profile?.role ?? null;
     const anonymous = Boolean(profile?.anonymous);
@@ -187,7 +293,13 @@ export function AuthProvider({ children }) {
       user: session?.user ?? null,
       profile,
       role,
-      personId: profile?.person_id || DEMO_PERSON_ID || "",
+      // Anonymous mode redirects check-ins away from the person's own record.
+      personId:
+        (anonymousMode && anonymousPersonId) || profile?.person_id || DEMO_PERSON_ID || "",
+      anonymousMode,
+      anonymousPersonId,
+      switchingAnonymous,
+      toggleAnonymousMode,
       officerId: profile?.officer_id || DEMO_OFFICER_ID || "",
       anonymous,
       caseCode: profile?.pseudonym || null,
@@ -195,6 +307,8 @@ export function AuthProvider({ children }) {
       // case code counts either way — there is no Supabase user behind it.
       isAuthenticated: useAccounts ? Boolean(session) || anonymous : Boolean(role),
       loading,
+      // Lets a caller distinguish "no role" from "role not known yet".
+      roleResolved,
       signIn,
       signUp,
       signOut,
@@ -206,11 +320,19 @@ export function AuthProvider({ children }) {
     session,
     profile,
     loading,
+    sessionResolved,
+    roleResolved,
+    profileFetchedFor,
+    userId,
     signIn,
     signUp,
     signOut,
     chooseRole,
     continueAnonymously,
+    anonymousMode,
+    anonymousPersonId,
+    switchingAnonymous,
+    toggleAnonymousMode,
   ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

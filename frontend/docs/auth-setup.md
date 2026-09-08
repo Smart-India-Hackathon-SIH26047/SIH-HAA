@@ -7,7 +7,7 @@ Two things to do, both in the Supabase dashboard. Ten minutes.
 **Project Settings → API**:
 
 ```
-VITE_SUPABASE_URL=https://xaakseuhjalhxfhrreli.supabase.co
+VITE_SUPABASE_URL=https://dlqwfewfbkjnvwhuqsdt.supabase.co
 VITE_SUPABASE_ANON_KEY=<the anon / publishable key>
 ```
 
